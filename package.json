@@ -46,9 +46,11 @@
   "dependencies": {
     "@babel/core": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
+    "@effect/platform": "^0.94.1",
     "@opentui/core": "^0.1.72",
     "@opentui/solid": "^0.1.72",
     "babel-preset-solid": "1.9.9",
+    "effect": "^3.19.14",
     "solid-js": "1.9.9"
   }
 }
