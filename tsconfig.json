@@ -1,30 +1,37 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig.json",
+
   "compilerOptions": {
-    // Environment setup & latest features
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "Preserve",
-    "moduleDetection": "force",
     "jsx": "preserve",
     "jsxImportSource": "@opentui/solid",
-    "allowJs": true,
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
 
-    // Bundler mode
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
     "verbatimModuleSyntax": true,
-    "noEmit": true,
-
-    // Best practices
-    "strict": true,
     "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
 
-    // Some stricter flags (disabled by default)
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
-  }
+    "noEmit": true,
+    "declaration": true,
+
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": true,
+
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    "forceConsistentCasingInFileNames": true,
+    "erasableSyntaxOnly": true,
+  },
 }
