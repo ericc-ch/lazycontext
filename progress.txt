@@ -20,3 +20,7 @@ Next: Update src/components/status-bar.tsx
 Next: Update src/components/repo-list.tsx
 
 ---
+
+2026-01-16: Updated src/components/repo-list.tsx - Replaced all hardcoded colors with theme colors using useTheme() hook. Status colors mapped to success/warning/error scales, background colors to bg[2], borders to fg[3], dim text to fg[5], primary text to fg[0], and selection indicator to info[0]. Added RGBA fallback values for type safety. Ran typecheck, lint, and tests - all pass.
+
+Next: Update src/components/add-repo.tsx

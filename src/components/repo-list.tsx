@@ -1,6 +1,7 @@
 import { For, Show } from "solid-js"
-import { TextAttributes, type MouseEvent } from "@opentui/core"
+import { TextAttributes, type MouseEvent, RGBA } from "@opentui/core"
 import type { Repo } from "../services/config"
+import { useTheme } from "./provider-theme"
 
 export interface RepoItemProps {
   repo: Repo
@@ -11,16 +12,18 @@ export interface RepoItemProps {
 }
 
 export function RepoItem(props: RepoItemProps) {
+  const theme = useTheme()
+
   const statusColor = () => {
     switch (props.status) {
       case "synced":
-        return "#22c55e"
+        return theme()?.success[6] ?? RGBA.fromHex("#22c55e")
       case "modified":
-        return "#eab308"
+        return theme()?.warning[6] ?? RGBA.fromHex("#eab308")
       case "missing":
-        return "#ef4444"
+        return theme()?.error[6] ?? RGBA.fromHex("#ef4444")
       default:
-        return "#888888"
+        return theme()?.grays[5] ?? RGBA.fromHex("#888888")
     }
   }
 
@@ -47,7 +50,11 @@ export function RepoItem(props: RepoItemProps) {
       paddingRight={1}
       paddingTop={1}
       paddingBottom={1}
-      backgroundColor={props.selected ? "#334455" : "#1a1b26"}
+      backgroundColor={
+        props.selected ?
+          (theme()?.fg[3] ?? RGBA.fromHex("#334455"))
+        : (theme()?.bg[2] ?? RGBA.fromHex("#1a1b26"))
+      }
       onMouseDown={handleMouseDown}
     >
       <box
@@ -57,18 +64,29 @@ export function RepoItem(props: RepoItemProps) {
       >
         <box flexDirection="row" alignItems="center" gap={2}>
           <box width={2}>
-            <text fg={props.selected ? "#00AAFF" : "#888888"}>
+            <text
+              fg={
+                props.selected ?
+                  (theme()?.info[0] ?? RGBA.fromHex("#00AAFF"))
+                : (theme()?.grays[5] ?? RGBA.fromHex("#888888"))
+              }
+            >
               {props.selected ? ">" : " "}
             </text>
           </box>
-          <text fg="#FFFFFF" attributes={TextAttributes.BOLD}>
+          <text
+            fg={theme()?.fg[0] ?? RGBA.fromHex("#FFFFFF")}
+            attributes={TextAttributes.BOLD}
+          >
             {props.repo.name}
           </text>
         </box>
         <box flexDirection="row" alignItems="center" gap={2}>
           <text fg={statusColor()}>{statusText()}</text>
           <Show when={props.lastUpdate}>
-            <text fg="#666666">{props.lastUpdate}</text>
+            <text fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}>
+              {props.lastUpdate}
+            </text>
           </Show>
         </box>
       </box>
@@ -85,6 +103,8 @@ export interface RepoListProps {
 }
 
 export function RepoList(props: RepoListProps) {
+  const theme = useTheme()
+
   const totalCount = () => props.repos.length
   const syncedCount = () =>
     Array.from(props.statuses.values()).filter((s) => s === "synced").length
@@ -96,7 +116,7 @@ export function RepoList(props: RepoListProps) {
       flexDirection="column"
       flexGrow={1}
       border
-      borderColor="#334455"
+      borderColor={theme()?.fg[3] ?? RGBA.fromHex("#334455")}
       borderStyle="single"
     >
       <box
@@ -104,17 +124,23 @@ export function RepoList(props: RepoListProps) {
         paddingRight={1}
         paddingTop={1}
         paddingBottom={1}
-        backgroundColor="#1a1b26"
+        backgroundColor={theme()?.bg[2] ?? RGBA.fromHex("#1a1b26")}
         flexDirection="row"
         justifyContent="space-between"
       >
-        <text fg="#00AAFF" attributes={TextAttributes.BOLD}>
+        <text
+          fg={theme()?.info[0] ?? RGBA.fromHex("#00AAFF")}
+          attributes={TextAttributes.BOLD}
+        >
           Repositories
         </text>
-        <text fg="#888888">
+        <text fg={theme()?.grays[5] ?? RGBA.fromHex("#888888")}>
           {syncedCount()}/{totalCount()} synced
           {missingCount() > 0 && (
-            <text fg="#ef4444"> ({missingCount()} missing)</text>
+            <text fg={theme()?.error[6] ?? RGBA.fromHex("#ef4444")}>
+              {" "}
+              ({missingCount()} missing)
+            </text>
           )}
         </text>
       </box>
@@ -130,7 +156,9 @@ export function RepoList(props: RepoListProps) {
               paddingTop={2}
               paddingBottom={2}
             >
-              <text fg="#666666">No repositories</text>
+              <text fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}>
+                No repositories
+              </text>
             </box>
           }
         >
@@ -152,23 +180,38 @@ export function RepoList(props: RepoListProps) {
         paddingRight={1}
         paddingTop={1}
         paddingBottom={1}
-        backgroundColor="#1a1b26"
+        backgroundColor={theme()?.bg[2] ?? RGBA.fromHex("#1a1b26")}
         flexDirection="row"
         gap={2}
       >
-        <text fg="#666666" attributes={TextAttributes.DIM}>
+        <text
+          fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+          attributes={TextAttributes.DIM}
+        >
           navigate
         </text>
-        <text fg="#666666" attributes={TextAttributes.DIM}>
+        <text
+          fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+          attributes={TextAttributes.DIM}
+        >
           |
         </text>
-        <text fg="#666666" attributes={TextAttributes.DIM}>
+        <text
+          fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+          attributes={TextAttributes.DIM}
+        >
           Enter sync
         </text>
-        <text fg="#666666" attributes={TextAttributes.DIM}>
+        <text
+          fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+          attributes={TextAttributes.DIM}
+        >
           |
         </text>
-        <text fg="#666666" attributes={TextAttributes.DIM}>
+        <text
+          fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+          attributes={TextAttributes.DIM}
+        >
           a add repo
         </text>
       </box>
