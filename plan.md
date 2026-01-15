@@ -65,9 +65,9 @@ Create a TUI application using `@opentui`, `solid-js`, and `effect` to manage a 
   - [x] Create `plan.md` (This file).
   - [x] Ensure `.context` directory handling.
 
-- [ ] **Core Logic (Effect Services)**
+- [x] **Core Logic (Effect Services)**
   - [x] Implement `GitService`: `clone` (default branch) and `pull`.
-  - [ ] Implement `ConfigService` for managing `.context/config.json`.
+  - [x] Implement `ConfigService` for managing `.context/config.json`.
 
 - [ ] **UI Implementation**
   - [ ] Create `RepoList` component.

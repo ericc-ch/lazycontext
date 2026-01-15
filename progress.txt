@@ -22,3 +22,20 @@ The service uses @effect/platform Command and CommandExecutor for git operations
 Type checks and lint passed.
 
 ---
+
+---
+Completed: Implement ConfigService for managing .context/config.json
+
+- Created src/services/config-service.ts with:
+  - Config interface for repository list configuration
+  - ConfigService interface with load, addRepo, removeRepo methods
+  - ConfigError type for error handling
+  - parseRepoName: Extracts repository name from Git URL
+  - load: Reads .context/config.json or returns default empty config
+  - addRepo: Parses URL, adds repo to config, saves to file
+  - removeRepo: Removes repo from config, saves to file
+  - live Layer that provides ConfigService using CommandExecutor
+
+The service uses @effect/platform Command and CommandExecutor for file operations.
+Type checks and lint passed.
+
