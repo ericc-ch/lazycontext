@@ -3,9 +3,9 @@ import { useKeyboard } from "@opentui/solid"
 import { ConfigService, type Repo } from "./services/config"
 import { GitService } from "./services/git"
 import { runApp } from "./runtime"
-import { RepoList } from "./components/RepoList"
-import { AddRepo } from "./components/AddRepo"
-import { StatusBar } from "./components/StatusBar"
+import { RepoList } from "./components/repo-list"
+import { AddRepo } from "./components/add-repo"
+import { StatusBar } from "./components/status-bar"
 
 type View = "list" | "add"
 
