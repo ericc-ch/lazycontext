@@ -1,105 +1,129 @@
-Default to using Bun instead of Node.js.
+# AGENTS.md
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+## Build Commands
 
-## APIs
-
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+```sh
+bun --watch src/main.tsx      # Development server
+bun run dev                   # Same as above
+bun run format                # Run prettier on all files
+bun run lint                  # Run oxlint with type-aware rules
+bun run typecheck             # Run typescript compiler
+```
 
 ## Testing
 
-Use `bun test` to run tests.
-
-```ts#index.test.ts
-import { test, expect } from "bun:test";
-
-test("hello world", () => {
-  expect(1).toBe(1);
-});
-```
-
-## Frontend
-
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
-
-Server:
-
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// import .css files directly and it works
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
+This project uses **vitest** for testing. Run all tests with:
 
 ```sh
-bun --hot ./index.ts
+bun test
 ```
 
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+Run a single test file:
+
+```sh
+bun test /path/to/file.test.ts
+```
+
+Run tests matching a pattern:
+
+```sh
+bun test --test-name-pattern="pattern"
+```
+
+## Language & Framework
+
+- **Runtime**: Bun (not Node.js)
+- **Language**: TypeScript with strict mode
+- **UI Framework**: OpenTUI (Solid.js-based) with `@opentui/core` and `@opentui/solid`
+- **Effect System**: Use `@effect/platform`, `@effect/platform-bun`, and the `effect` library
+- **Database**: bun:sqlite for SQLite
+
+## TypeScript Guidelines
+
+Strict mode is enabled. Follow these rules:
+
+- Enable `exactOptionalPropertyTypes`, `noImplicitOverride`, `noUncheckedIndexedAccess`
+- Enable `noUnusedLocals` and `noUnusedParameters`
+- Use `verbatimModuleSyntax` - import types with `import type`
+- Set `noUncheckedSideEffectImports: true`
+
+## Code Style
+
+**Prettier** formatting is applied:
+
+- No semicolons
+- Experimental ternary operators enabled
+- Operators at start of lines in multiline expressions
+
+**Oxlint** rules enforced:
+
+- No `any` type (`typescript/no-explicit-any`)
+- No `forEach` - use `for...of` instead (`unicorn/no-array-for-each`)
+- Use `Set.has()` instead of `Array.includes()` (`unicorn/prefer-set-has`)
+- Use `find()` instead of `filter()[0]` (`unicorn/prefer-array-find`)
+- Use `flatMap()` when chaining map+filter (`unicorn/prefer-array-flat-map`)
+- Prefer `Array.isArray()` over `instanceof Array`
+- Default case required in switch statements (`default-case`)
+- No bitwise operators except shifts
+- No parameter reassignment (`no-param-reassign`)
+- Methods must use `this` or be static (`class-methods-use-this`)
+- Use named exports over default exports where possible
+- No commonjs requires - use ES imports only
+
+## Import Conventions
+
+```typescript
+import type { SomeType } from "./module" // Type-only imports
+import { Concrete, type SomeType } from "./module" // Mixed imports
+import { TextAttributes } from "@opentui/core"
+import { render } from "@opentui/solid"
+import { Effect } from "effect"
+import { HttpClient } from "@effect/platform"
+```
+
+## Naming Conventions
+
+- **Files**: kebab-case (`user-service.ts`)
+- **Types**: PascalCase (`UserRecord`, `CreateUserError`)
+- **Interfaces**: Prefer type aliases over interfaces unless extending
+- **Constants**: SCREAMING_SNAKE_CASE for config values
+- **Effects**: Suffix with `Effect` (`fetchUsersEffect`)
+
+## Error Handling
+
+- Use `Effect.fail` or error types with Effect
+- No `try/catch` blocks outside Effect context - use `Effect.catch`
+- Always handle promise rejections with `.catch()` or use Effect's promise utilities
+
+## Web APIs
+
+- Use `Bun.serve()` for HTTP servers, not Express
+- Use `bun:sqlite` for SQLite, not better-sqlite3
+- Use `Bun.file()` instead of fs.readFile/writeFile
+- Use `Bun.$` for subprocess execution
+
+## OpenTUI Components
+
+OpenTUI uses custom elements (not JSX in output):
+
+```tsx
+import { TextAttributes } from "@opentui/core"
+import { render } from "@opentui/solid"
+
+render(() => (
+  <box alignItems="center" justifyContent="center" flexGrow={1}>
+    <text attributes={TextAttributes.DIM}>Hello</text>
+  </box>
+))
+```
+
+## Configuration Files
+
+- `tsconfig.json`: Strict TypeScript with Effect language service plugin
+- `.oxlintrc.json`: Linting rules for imports, TypeScript, performance
+- `.prettierrc.json`: Formatting with no semicolons
+- `bunfig.toml`: Bun configuration
+
+## Git Commit Style
+
+Use conventional commits: `feat(scope)`, `fix(scope)`, `docs`, `refactor`, `test`
