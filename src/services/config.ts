@@ -1,8 +1,9 @@
 import { FileSystem, Path } from "@effect/platform"
 import { Data, Effect, Schema } from "effect"
+import { parseGithubUrl } from "../lib/url"
 
 export class Repo extends Schema.Class<Repo>("Repo")({
-  name: Schema.String,
+  name: Schema.String.pipe(Schema.optional),
   url: Schema.String,
 }) {}
 
@@ -15,16 +16,6 @@ class ConfigError extends Data.TaggedError("ConfigError")<{
 }> {}
 
 const defaultConfig = new Config({ repos: [] })
-
-// REVIEW: Make this more readable
-function parseRepoName(url: string): string {
-  return (
-    url
-      .split("/")
-      .at(-1)
-      ?.replace(/\.git$/, "") ?? url
-  )
-}
 
 export class ConfigService extends Effect.Service<ConfigService>()(
   "@lazycontext/ConfigService",
@@ -60,7 +51,7 @@ export class ConfigService extends Effect.Service<ConfigService>()(
         }),
 
         addRepo: Effect.fn(function* (url: string) {
-          const name = parseRepoName(url)
+          const { repo } = parseGithubUrl(url)
           const config = yield* readConfigFile
 
           const existingUrls = new Set(config.repos.map((r) => r.url))
@@ -69,7 +60,7 @@ export class ConfigService extends Effect.Service<ConfigService>()(
           }
 
           const newConfig = new Config({
-            repos: [...config.repos, new Repo({ name, url })],
+            repos: [...config.repos, new Repo({ name: repo, url })],
           })
           const json = yield* Schema.encode(Config)(newConfig)
           const content = JSON.stringify(json, null, 2)

@@ -15,7 +15,7 @@ Create a TUI application using `@opentui`, `solid-js`, and `effect` to manage a 
     - Clone missing repositories.
     - Pull existing repositories.
     - "Sync All" capability.
-4.  **Configuration Persistence:** Store repository list in `.context/config.json`.
+4.  **Configuration Persistence:** Store repository list in `lazycontext.json`.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ Create a TUI application using `@opentui`, `solid-js`, and `effect` to manage a 
 
 ### Data Structures
 
-**`.context/config.json`**
+**`lazycontext.json`**
 
 ```json
 {
@@ -43,21 +43,21 @@ Create a TUI application using `@opentui`, `solid-js`, and `effect` to manage a 
 
 ### Components (UI)
 
-- `App`: Main layout.
-- `RepoList`: Scrollable list of repositories. Displays name, status (synced/missing), and last update.
+- `App`: Main layout coordinating RepoList, InputBar, and StatusBar.
+- `RepoList`: Scrollable list of repositories. Displays name, status (synced/missing/modified), and last update.
 - `InputBar`: Component for typing commands or URLs (e.g., for adding a repo).
 - `StatusBar`: Global status or error messages.
 
 ### Services (Effect Layers)
 
 1.  **ConfigService:**
-    - `load()`: Read `.context/config.json` (or create default).
-    - `addRepo(url)`: Parse URL, update config, save.
+    - `load()`: Read `lazycontext.json` (creates `.context/` dir if needed).
+    - `addRepo(url)`: Parse URL, infer name, update config, save.
     - `removeRepo(name)`: Remove from config, save.
 2.  **GitService:**
-    - `clone(repo)`: `git clone ...`
-    - `pull(repo)`: `git pull ...`
-    - `checkStatus(repo)`: Check if directory exists, maybe `git status`.
+    - `clone(repo)`: `git clone --quiet ...`
+    - `pull(repo)`: `git pull --quiet ...`
+    - `checkStatus(repo)`: Check directory existence and `git status --porcelain`.
 
 ## Implementation Steps
 
@@ -67,14 +67,18 @@ Create a TUI application using `@opentui`, `solid-js`, and `effect` to manage a 
 
 - [x] **Core Logic (Effect Services)**
   - [x] Implement `GitService`: `clone` (default branch) and `pull`.
-  - [x] Implement `ConfigService` for managing `.context/config.json`.
+  - [x] Implement `ConfigService` for managing `lazycontext.json`.
 
 - [ ] **UI Implementation**
   - [ ] Create `RepoList` component.
   - [ ] Create `AddRepo` functionality/component.
+  - [ ] Create `StatusBar` component for global status/errors.
   - [ ] Connect UI to Services using Effect runtimes.
 
 - [ ] **Integration**
   - [ ] Update `src/main.tsx` to mount the application.
-  - [ ] Verify "Add Repo" flow.
-  - [ ] Verify "Sync" flow.
+  - [ ] Implement main App layout with RepoList, InputBar, and StatusBar.
+  - [ ] Wire up "Add Repo" flow from UI to ConfigService.
+  - [ ] Wire up "Sync" flow (clone/pull) from UI to GitService.
+  - [ ] Implement "Sync All" functionality.
+  - [ ] Verify full workflow end-to-end.
