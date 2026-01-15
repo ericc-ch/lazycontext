@@ -1,0 +1,11 @@
+- [x] Fix src/components/provider-theme.tsx
+  - Remove non-existent `createDefaultPalette` import
+  - Ensure theme resource uses proper initial value
+- [ ] Update src/app.tsx
+  - Replace hardcoded colors with theme colors
+- [ ] Update src/components/status-bar.tsx
+  - Replace hardcoded colors with theme colors
+- [ ] Update src/components/repo-list.tsx
+  - Replace hardcoded colors with theme colors
+- [ ] Update src/components/add-repo.tsx
+  - Replace hardcoded colors with theme colors

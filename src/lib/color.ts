@@ -74,6 +74,34 @@ function generateGrayScale(bg: RGBA): Record<number, RGBA> {
   return generateColorScale(RGBA.fromInts(128, 128, 128), bg)
 }
 
+export function createDefaultPalette(): ColorPalette {
+  const bg = RGBA.fromHex(DEFAULT_COLORS.bg)
+  const fg = RGBA.fromHex(DEFAULT_COLORS.fg)
+
+  return {
+    primary: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.cyan), bg),
+    success: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.green), bg),
+    error: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.red), bg),
+    warning: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.yellow), bg),
+    info: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.blue), bg),
+    bg: generateColorScale(bg, bg),
+    fg: generateColorScale(fg, bg),
+    grays: generateGrayScale(bg),
+    red: RGBA.fromHex(DEFAULT_COLORS.red),
+    brightRed: RGBA.fromHex(DEFAULT_COLORS.brightRed),
+    green: RGBA.fromHex(DEFAULT_COLORS.green),
+    brightGreen: RGBA.fromHex(DEFAULT_COLORS.brightGreen),
+    yellow: RGBA.fromHex(DEFAULT_COLORS.yellow),
+    brightYellow: RGBA.fromHex(DEFAULT_COLORS.brightYellow),
+    blue: RGBA.fromHex(DEFAULT_COLORS.blue),
+    brightBlue: RGBA.fromHex(DEFAULT_COLORS.brightBlue),
+    cyan: RGBA.fromHex(DEFAULT_COLORS.cyan),
+    brightCyan: RGBA.fromHex(DEFAULT_COLORS.brightCyan),
+    black: RGBA.fromHex(DEFAULT_COLORS.black),
+    white: RGBA.fromHex(DEFAULT_COLORS.white),
+  }
+}
+
 export async function createColorPalette(
   renderer: CliRenderer,
 ): Promise<ColorPalette> {
