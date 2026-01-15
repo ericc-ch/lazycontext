@@ -85,3 +85,27 @@ Completed: Create StatusBar component
 The component provides a standardized way to show application status at the bottom
 of the UI, with proper color coding for different message types.
 Type checks and lint passed.
+
+---
+
+Completed: Connect UI to Services using Effect runtimes
+
+- Created src/runtime.ts with:
+  - ManagedRuntime layer combining GitService and ConfigService
+  - runApp helper function for running effects with the proper layer
+  
+- Created src/App.tsx with:
+  - Main App component coordinating RepoList, AddRepo, and StatusBar
+  - State management for repos, statuses, view state, and messages
+  - loadConfig: Loads repository configuration from ConfigService
+  - checkAllStatuses: Checks sync status for all repos using GitService
+  - handleAddRepo: Adds new repo via ConfigService and clones via GitService
+  - handleSyncRepo: Syncs selected repo (clone if missing, pull if existing)
+  - handleSelect: Updates selected repository index
+  - Keyboard navigation (j/k for up/down, a for add, enter for sync, escape for cancel)
+  - View switching between list and add modes
+
+- Updated src/main.tsx to mount the App component
+
+The UI now integrates with the Effect services using ManagedRuntime.
+Type checks, lint, and tests passed.

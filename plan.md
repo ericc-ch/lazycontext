@@ -69,11 +69,11 @@ Create a TUI application using `@opentui`, `solid-js`, and `effect` to manage a 
   - [x] Implement `GitService`: `clone` (default branch) and `pull`.
   - [x] Implement `ConfigService` for managing `lazycontext.json`.
 
-- [ ] **UI Implementation**
-  - [x] Create `RepoList` component.
-  - [x] Create `AddRepo` functionality/component.
-  - [x] Create `StatusBar` component for global status/errors.
-  - [ ] Connect UI to Services using Effect runtimes.
+  - [ ] **UI Implementation**
+    - [x] Create `RepoList` component.
+    - [x] Create `AddRepo` functionality/component.
+    - [x] Create `StatusBar` component for global status/errors.
+    - [x] Connect UI to Services using Effect runtimes.
 
 - [ ] **Integration**
   - [ ] Update `src/main.tsx` to mount the application.
