@@ -1,6 +1,7 @@
 import { createSignal, Show } from "solid-js"
-import { TextAttributes } from "@opentui/core"
+import { TextAttributes, RGBA } from "@opentui/core"
 import { Repo } from "../services/config"
+import { useTheme } from "./provider-theme"
 
 export interface AddRepoProps {
   onAdd: (repo: Repo) => void
@@ -12,6 +13,7 @@ export type AddRepoStatus = "idle" | "adding" | "cloning" | "success" | "error"
 export function AddRepo(props: AddRepoProps) {
   const [url, setUrl] = createSignal("")
   const [status, setStatus] = createSignal<AddRepoStatus>("idle")
+  const theme = useTheme()
 
   const handleSubmit = () => {
     const inputUrl = url().trim()
@@ -25,7 +27,7 @@ export function AddRepo(props: AddRepoProps) {
     <box
       flexDirection="column"
       border
-      borderColor="#334455"
+      borderColor={theme()?.fg[3] ?? RGBA.fromHex("#334455")}
       borderStyle="single"
       paddingLeft={1}
       paddingRight={1}
@@ -33,13 +35,16 @@ export function AddRepo(props: AddRepoProps) {
       paddingBottom={1}
     >
       <box flexDirection="row" alignItems="center" gap={1}>
-        <text fg="#00AAFF" attributes={TextAttributes.BOLD}>
+        <text
+          fg={theme()?.info[0] ?? RGBA.fromHex("#00AAFF")}
+          attributes={TextAttributes.BOLD}
+        >
           Add Repository
         </text>
       </box>
 
       <box flexDirection="row" alignItems="center" gap={1} marginTop={1}>
-        <text fg="#888888">URL:</text>
+        <text fg={theme()?.grays[5] ?? RGBA.fromHex("#888888")}>URL:</text>
         <input
           value={url()}
           onInput={setUrl}
@@ -48,8 +53,8 @@ export function AddRepo(props: AddRepoProps) {
           focused
           style={{
             flexGrow: 1,
-            backgroundColor: "#1a1b26",
-            cursorColor: "#00AAFF",
+            backgroundColor: theme()?.bg[2] ?? RGBA.fromHex("#1a1b26"),
+            cursorColor: theme()?.info[0] ?? RGBA.fromHex("#00AAFF"),
           }}
         />
       </box>
@@ -59,22 +64,33 @@ export function AddRepo(props: AddRepoProps) {
           when={status() === "idle"}
           fallback={
             <Show when={status() === "adding"}>
-              <text fg="#00AAFF">Adding to config...</text>
+              <text fg={theme()?.info[0] ?? RGBA.fromHex("#00AAFF")}>
+                Adding to config...
+              </text>
             </Show>
           }
         >
-          <text fg="#666666" attributes={TextAttributes.DIM}>
+          <text
+            fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+            attributes={TextAttributes.DIM}
+          >
             Press Enter to add, Escape to cancel
           </text>
         </Show>
         <Show when={status() === "cloning"}>
-          <text fg="#00AAFF">Cloning repository...</text>
+          <text fg={theme()?.info[0] ?? RGBA.fromHex("#00AAFF")}>
+            Cloning repository...
+          </text>
         </Show>
         <Show when={status() === "success"}>
-          <text fg="#22c55e">Repository added successfully!</text>
+          <text fg={theme()?.success[6] ?? RGBA.fromHex("#22c55e")}>
+            Repository added successfully!
+          </text>
         </Show>
         <Show when={status() === "error"}>
-          <text fg="#ef4444">Error occurred</text>
+          <text fg={theme()?.error[6] ?? RGBA.fromHex("#ef4444")}>
+            Error occurred
+          </text>
         </Show>
       </box>
     </box>

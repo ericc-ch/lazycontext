@@ -7,5 +7,5 @@
   - Replace hardcoded colors with theme colors
 - [x] Update src/components/repo-list.tsx
   - Replace hardcoded colors with theme colors
-- [ ] Update src/components/add-repo.tsx
+- [x] Update src/components/add-repo.tsx
   - Replace hardcoded colors with theme colors
