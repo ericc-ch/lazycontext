@@ -53,3 +53,19 @@ Completed: Create RepoList component
 The component integrates with ConfigService's Repo type and displays repository status
 from GitService's checkStatus results.
 Type checks and lint passed.
+
+---
+
+Completed: Create AddRepo functionality/component
+
+- Created src/components/AddRepo.tsx with:
+  - AddRepo component for adding new repositories via URL input
+  - AddRepoProps interface with onAdd and onCancel callbacks
+  - AddRepoStatus type for tracking component state (idle, adding, cloning, success, error)
+  - Input component for typing Git URL with placeholder
+  - Status display showing current operation state
+  - Visual styling matching the existing RepoList component
+
+The component integrates with ConfigService to add repositories and uses OpenTUI's
+input component with proper event handling for submit and input events.
+Type checks, lint, and tests passed.

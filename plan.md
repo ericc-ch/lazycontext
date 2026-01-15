@@ -71,7 +71,7 @@ Create a TUI application using `@opentui`, `solid-js`, and `effect` to manage a 
 
 - [ ] **UI Implementation**
   - [x] Create `RepoList` component.
-  - [ ] Create `AddRepo` functionality/component.
+  - [x] Create `AddRepo` functionality/component.
   - [ ] Create `StatusBar` component for global status/errors.
   - [ ] Connect UI to Services using Effect runtimes.
 
