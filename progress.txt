@@ -69,3 +69,19 @@ Completed: Create AddRepo functionality/component
 The component integrates with ConfigService to add repositories and uses OpenTUI's
 input component with proper event handling for submit and input events.
 Type checks, lint, and tests passed.
+
+---
+
+Completed: Create StatusBar component
+
+- Created src/components/StatusBar.tsx with:
+  - StatusBar component for displaying global status and error messages
+  - StatusBarProps interface with message and type props
+  - Type support: "info" (default), "success", and "error"
+  - Dynamic color coding based on message type
+  - Version display in the right corner
+  - Consistent styling matching the RepoList and AddRepo components
+
+The component provides a standardized way to show application status at the bottom
+of the UI, with proper color coding for different message types.
+Type checks and lint passed.
