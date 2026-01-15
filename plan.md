@@ -3,7 +3,7 @@
   - Ensure theme resource uses proper initial value
 - [x] Update src/app.tsx
   - Replace hardcoded colors with theme colors
-- [ ] Update src/components/status-bar.tsx
+- [x] Update src/components/status-bar.tsx
   - Replace hardcoded colors with theme colors
 - [ ] Update src/components/repo-list.tsx
   - Replace hardcoded colors with theme colors

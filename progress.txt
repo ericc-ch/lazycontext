@@ -14,3 +14,9 @@ Next: Begin working on first task.
 Next: Update src/components/status-bar.tsx
 
 ---
+
+2026-01-16: Updated src/components/status-bar.tsx - Replaced all hardcoded colors with theme colors using useTheme() hook. Background "#1a1b26" → theme()?.bg[2], border "#334455" → theme()?.fg[3], dim text "#666666" → theme()?.fg[5], status colors mapped to success/error/info scales. Added RGBA fallback values for type safety. Ran typecheck, lint, and tests - all pass.
+
+Next: Update src/components/repo-list.tsx
+
+---

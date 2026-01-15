@@ -1,4 +1,5 @@
-import { TextAttributes } from "@opentui/core"
+import { TextAttributes, RGBA } from "@opentui/core"
+import { useTheme } from "./provider-theme"
 
 export interface StatusBarProps {
   message: string
@@ -6,14 +7,16 @@ export interface StatusBarProps {
 }
 
 export function StatusBar(props: StatusBarProps) {
+  const theme = useTheme()
+
   const getColor = () => {
     switch (props.type) {
       case "success":
-        return "#22c55e"
+        return theme()?.success[6]
       case "error":
-        return "#ef4444"
+        return theme()?.error[6]
       default:
-        return "#888888"
+        return theme()?.info[6]
     }
   }
 
@@ -23,22 +26,30 @@ export function StatusBar(props: StatusBarProps) {
       paddingRight={1}
       paddingTop={1}
       paddingBottom={1}
-      backgroundColor="#1a1b26"
+      backgroundColor={theme()?.bg[2] ?? RGBA.fromHex("#1a1b26")}
       flexDirection="row"
       justifyContent="space-between"
       alignItems="center"
       border
-      borderColor="#334455"
+      borderColor={theme()?.fg[3] ?? RGBA.fromHex("#334455")}
       borderStyle="single"
     >
       <box flexDirection="row" alignItems="center" gap={1}>
-        <text fg="#666666" attributes={TextAttributes.DIM}>
+        <text
+          fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+          attributes={TextAttributes.DIM}
+        >
           Status
         </text>
-        <text fg={getColor()}>{props.message || "Ready"}</text>
+        <text fg={getColor() ?? RGBA.fromHex("#888888")}>
+          {props.message || "Ready"}
+        </text>
       </box>
       <box flexDirection="row" alignItems="center" gap={1}>
-        <text fg="#666666" attributes={TextAttributes.DIM}>
+        <text
+          fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+          attributes={TextAttributes.DIM}
+        >
           lazycontext v0.1.0
         </text>
       </box>
