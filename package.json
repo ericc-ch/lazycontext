@@ -17,22 +17,24 @@
   },
   "type": "module",
   "scripts": {
-    "ci": "bun run format && bun run lint && bun run typecheck",
     "dev": "bun --watch src/main.tsx",
     "format": "prettier --write .",
-    "lint": "oxlint",
+    "lint": "oxlint --type-aware",
     "typecheck": "tsgo"
   },
   "dependencies": {
     "@effect/platform": "^0.94.1",
     "@opentui/core": "^0.1.72",
     "@opentui/solid": "^0.1.72",
-    "@typescript/native-preview": "^7.0.0-dev.20260114.1",
     "effect": "^3.19.14",
-    "solid-js": "1.9.9"
+    "solid-js": "1.9.9",
+    "@effect/platform-bun": "^0.87.0"
   },
   "devDependencies": {
     "@types/bun": "^1.3.6",
+    "@typescript/native-preview": "^7.0.0-dev.20260114.1",
+    "oxlint-tsgolint": "^0.11.0",
+    "@effect/language-service": "^0.65.0",
     "oxlint": "^1.39.0",
     "prettier": "^3.8.0",
     "typescript": "^5.9.3"
