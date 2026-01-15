@@ -6,3 +6,19 @@ Project initialized with Ralph workflow.
 Next: Begin working on first task.
 
 ---
+
+Completed: Implement GitService with clone, pull, and checkStatus methods
+
+- Created src/services/git-service.ts with:
+  - Repo interface for repository data
+  - GitService interface with clone, pull, checkStatus methods
+  - GitError type for error handling
+  - clone: Uses git clone --quiet to clone repos to target directory
+  - pull: Uses git -C <dir> pull --quiet to pull latest changes
+  - checkStatus: Returns "synced", "modified", or "missing" status
+  - live Layer that provides GitService using CommandExecutor
+
+The service uses @effect/platform Command and CommandExecutor for git operations.
+Type checks and lint passed.
+
+---
