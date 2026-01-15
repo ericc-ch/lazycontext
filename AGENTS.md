@@ -1,129 +1,45 @@
 # AGENTS.md
 
-## Build Commands
+## Commands
 
-```sh
-bun --watch src/main.tsx      # Development server
-bun run dev                   # Same as above
-bun run format                # Run prettier on all files
-bun run lint                  # Run oxlint with type-aware rules
-bun run typecheck             # Run typescript compiler
-```
-
-## Testing
-
-This project uses **vitest** for testing. Run all tests with:
-
-```sh
-bun test
-```
-
-Run a single test file:
-
-```sh
-bun test /path/to/file.test.ts
-```
-
-Run tests matching a pattern:
-
-```sh
-bun test --test-name-pattern="pattern"
-```
+- `bun run dev` — Run the application in development mode
+- `bun run format` — Run prettier on all files
+- `bun run lint` — Run oxlint with type-aware rules
+- `bun run typecheck` — Run TypeScript compiler
+- `bun test` — Run all tests
+- `bun test /path/to/file.test.ts` — Run a single test file
+- `bun test --test-name-pattern="pattern"` — Run tests matching a pattern
 
 ## Language & Framework
 
 - **Runtime**: Bun (not Node.js)
-- **Language**: TypeScript with strict mode
-- **UI Framework**: OpenTUI (Solid.js-based) with `@opentui/core` and `@opentui/solid`
+- **Language**: TypeScript
+- **UI Framework**: OpenTUI (Solid.js-based) with `@opentui/core` and `@opentui/solid` — `see docs/opentui.md`
 - **Effect System**: Use `@effect/platform`, `@effect/platform-bun`, and the `effect` library
-- **Database**: bun:sqlite for SQLite
 
-## TypeScript Guidelines
+## Code Conventions
 
-Strict mode is enabled. Follow these rules:
+Minimize explicit type annotations; let TypeScript infer types where possible
 
-- Enable `exactOptionalPropertyTypes`, `noImplicitOverride`, `noUncheckedIndexedAccess`
-- Enable `noUnusedLocals` and `noUnusedParameters`
-- Use `verbatimModuleSyntax` - import types with `import type`
-- Set `noUncheckedSideEffectImports: true`
-
-## Code Style
-
-**Prettier** formatting is applied:
-
-- No semicolons
-- Experimental ternary operators enabled
-- Operators at start of lines in multiline expressions
-
-**Oxlint** rules enforced:
-
-- No `any` type (`typescript/no-explicit-any`)
-- No `forEach` - use `for...of` instead (`unicorn/no-array-for-each`)
-- Use `Set.has()` instead of `Array.includes()` (`unicorn/prefer-set-has`)
-- Use `find()` instead of `filter()[0]` (`unicorn/prefer-array-find`)
-- Use `flatMap()` when chaining map+filter (`unicorn/prefer-array-flat-map`)
-- Prefer `Array.isArray()` over `instanceof Array`
-- Default case required in switch statements (`default-case`)
-- No bitwise operators except shifts
-- No parameter reassignment (`no-param-reassign`)
-- Methods must use `this` or be static (`class-methods-use-this`)
-- Use named exports over default exports where possible
-- No commonjs requires - use ES imports only
-
-## Import Conventions
+### Import
 
 ```typescript
 import type { SomeType } from "./module" // Type-only imports
 import { Concrete, type SomeType } from "./module" // Mixed imports
-import { TextAttributes } from "@opentui/core"
+import { TextAttributes } from "@opentui/core" // Use barrel import
 import { render } from "@opentui/solid"
-import { Effect } from "effect"
-import { HttpClient } from "@effect/platform"
 ```
 
-## Naming Conventions
+## Context & References
 
-- **Files**: kebab-case (`user-service.ts`)
-- **Types**: PascalCase (`UserRecord`, `CreateUserError`)
-- **Interfaces**: Prefer type aliases over interfaces unless extending
-- **Constants**: SCREAMING_SNAKE_CASE for config values
-- **Effects**: Suffix with `Effect` (`fetchUsersEffect`)
+When working with OpenTUI:
 
-## Error Handling
+- Read `docs/opentui.md` for components, hooks, styling, and patterns
+- Explore `.context/opentui/` for reference implementations
 
-- Use `Effect.fail` or error types with Effect
-- No `try/catch` blocks outside Effect context - use `Effect.catch`
-- Always handle promise rejections with `.catch()` or use Effect's promise utilities
+When working with Effect:
 
-## Web APIs
+- Read `docs/effect.md` for service patterns, error handling, and naming conventions
+- Explore `.context/effect/` for reference implementations
 
-- Use `Bun.serve()` for HTTP servers, not Express
-- Use `bun:sqlite` for SQLite, not better-sqlite3
-- Use `Bun.file()` instead of fs.readFile/writeFile
-- Use `Bun.$` for subprocess execution
-
-## OpenTUI Components
-
-OpenTUI uses custom elements (not JSX in output):
-
-```tsx
-import { TextAttributes } from "@opentui/core"
-import { render } from "@opentui/solid"
-
-render(() => (
-  <box alignItems="center" justifyContent="center" flexGrow={1}>
-    <text attributes={TextAttributes.DIM}>Hello</text>
-  </box>
-))
-```
-
-## Configuration Files
-
-- `tsconfig.json`: Strict TypeScript with Effect language service plugin
-- `.oxlintrc.json`: Linting rules for imports, TypeScript, performance
-- `.prettierrc.json`: Formatting with no semicolons
-- `bunfig.toml`: Bun configuration
-
-## Git Commit Style
-
-Use conventional commits: `feat(scope)`, `fix(scope)`, `docs`, `refactor`, `test`
+Use these as authoritative sources for API usage and coding conventions.
