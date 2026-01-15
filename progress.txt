@@ -23,7 +23,6 @@ Type checks and lint passed.
 
 ---
 
----
 Completed: Implement ConfigService for managing .context/config.json
 
 - Created src/services/config-service.ts with:
@@ -39,3 +38,18 @@ Completed: Implement ConfigService for managing .context/config.json
 The service uses @effect/platform Command and CommandExecutor for file operations.
 Type checks and lint passed.
 
+---
+
+Completed: Create RepoList component
+
+- Created src/components/RepoList.tsx with:
+  - RepoItem component: Displays individual repository with name, status, and selection state
+  - RepoList component: Scrollable list showing all repositories with status counts
+  - Status indicators: "synced" (green), "modified" (yellow), "missing" (red)
+  - Keyboard navigation hints in the footer
+  - Uses OpenTUI SolidJS components (box, text) with SolidJS control flow (For, Show)
+  - Proper event handling with onMouseDown for click interactions
+
+The component integrates with ConfigService's Repo type and displays repository status
+from GitService's checkStatus results.
+Type checks and lint passed.
