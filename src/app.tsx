@@ -1,11 +1,13 @@
 import { createSignal, onMount, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
+import { RGBA } from "@opentui/core"
 import { ConfigService, type Repo } from "./services/config"
 import { GitService } from "./services/git"
 import { runApp } from "./runtime"
 import { RepoList } from "./components/repo-list"
 import { AddRepo } from "./components/add-repo"
 import { StatusBar } from "./components/status-bar"
+import { ThemeProvider, useTheme } from "./components/provider-theme"
 
 type View = "list" | "add"
 
@@ -19,6 +21,7 @@ interface AppState {
 }
 
 export function App() {
+  const theme = useTheme()
   const [state, setState] = createSignal<AppState>({
     repos: [],
     statuses: new Map(),
@@ -245,35 +248,39 @@ export function App() {
     useKeyboard(handleKeyNavigation)
   })
 
+  const bgColor = () => theme()?.bg[1] ?? RGBA.fromHex("#0f0f14")
+
   return (
-    <box
-      flexDirection="column"
-      width="100%"
-      height="100%"
-      backgroundColor="#0f0f14"
-      paddingLeft={1}
-      paddingRight={1}
-      paddingTop={1}
-      paddingBottom={1}
-    >
-      <box flexDirection="column" flexGrow={1} gap={1}>
-        <Show when={state().view === "list"}>
-          <RepoList
-            repos={state().repos}
-            statuses={state().statuses}
-            selectedIndex={state().selectedIndex}
-            onSelect={handleSelect}
-            onEnter={handleSyncRepo}
-          />
-        </Show>
-        <Show when={state().view === "add"}>
-          <AddRepo
-            onAdd={(repo) => handleAddRepo(repo.url!)}
-            onCancel={() => setState((prev) => ({ ...prev, view: "list" }))}
-          />
-        </Show>
+    <ThemeProvider>
+      <box
+        flexDirection="column"
+        width="100%"
+        height="100%"
+        backgroundColor={bgColor()}
+        paddingLeft={1}
+        paddingRight={1}
+        paddingTop={1}
+        paddingBottom={1}
+      >
+        <box flexDirection="column" flexGrow={1} gap={1}>
+          <Show when={state().view === "list"}>
+            <RepoList
+              repos={state().repos}
+              statuses={state().statuses}
+              selectedIndex={state().selectedIndex}
+              onSelect={handleSelect}
+              onEnter={handleSyncRepo}
+            />
+          </Show>
+          <Show when={state().view === "add"}>
+            <AddRepo
+              onAdd={(repo) => handleAddRepo(repo.url!)}
+              onCancel={() => setState((prev) => ({ ...prev, view: "list" }))}
+            />
+          </Show>
+        </box>
+        <StatusBar message={state().message} type={state().messageType} />
       </box>
-      <StatusBar message={state().message} type={state().messageType} />
-    </box>
+    </ThemeProvider>
   )
 }

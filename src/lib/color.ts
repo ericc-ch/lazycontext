@@ -146,3 +146,16 @@ export async function createColorPalette(
 export function withAlpha(color: RGBA, alpha: number) {
   return RGBA.fromValues(color.r, color.g, color.b, alpha)
 }
+
+export function rgbaToHex(color: RGBA): string {
+  const r = Math.round(color.r * 255)
+    .toString(16)
+    .padStart(2, "0")
+  const g = Math.round(color.g * 255)
+    .toString(16)
+    .padStart(2, "0")
+  const b = Math.round(color.b * 255)
+    .toString(16)
+    .padStart(2, "0")
+  return `#${r}${g}${b}`
+}

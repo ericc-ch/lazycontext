@@ -9,6 +9,8 @@ Next: Begin working on first task.
 
 2026-01-16: Fixed src/components/provider-theme.tsx - Created missing `createDefaultPalette` function in src/lib/color.ts to provide proper initial value for theme resource. Updated plan.md, ran typecheck, lint, and tests - all pass.
 
-Next: Update src/app.tsx
+2026-01-16: Updated src/app.tsx - Replaced hardcoded backgroundColor "#0f0f14" with theme color using useTheme() hook and ThemeProvider. Added rgbaToHex helper in src/lib/color.ts for color conversion. Ran typecheck, lint, and tests - all pass.
+
+Next: Update src/components/status-bar.tsx
 
 ---
