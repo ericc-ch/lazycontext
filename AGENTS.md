@@ -42,4 +42,11 @@ When working with Effect:
 - Read `docs/effect.md` for service patterns, error handling, and naming conventions
 - Explore `.context/effect/` for reference implementations
 
+Do not use subagents when reading from `docs/*`
 Use these as authoritative sources for API usage and coding conventions.
+
+### Priority Order for Documentation
+
+1. First, explore `.context/` directories for reference implementations and patterns
+2. Then, read relevant `docs/*.md` files for API usage and conventions
+3. Only use the documentation tool (Context7) when information is not available in context or docs directories

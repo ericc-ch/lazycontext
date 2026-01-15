@@ -34,7 +34,7 @@ export const Database = Context.Tag<Database>("@app/Database")
 const myEffect = (input: string) => Effect.gen(function* () { ... })
 
 // Use:
-const myEffect = Effect.fn(function* myEffect(input: string) { ... })
+const myEffect = Effect.fn(function* (input: string) { ... })
 ```
 
 ## Naming Conventions

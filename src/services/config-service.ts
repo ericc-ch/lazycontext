@@ -1,193 +1,103 @@
-import { type Effect, gen, fail, catchTag } from "effect/Effect"
-import { type Layer, succeed } from "effect/Layer"
-import { GenericTag } from "effect/Context"
-import * as Command from "@effect/platform/Command"
-import * as CommandExecutor from "@effect/platform/CommandExecutor"
-import type { Repo } from "./git-service"
+import { FileSystem, Path } from "@effect/platform"
+import { Data, Effect, Schema } from "effect"
 
-export interface Config {
-  readonly repos: ReadonlyArray<Repo>
-}
+export class Repo extends Schema.Class<Repo>("Repo")({
+  name: Schema.String,
+  url: Schema.String,
+}) {}
 
-export interface ConfigService {
-  readonly load: () => Effect<
-    Config,
-    ConfigError,
-    CommandExecutor.CommandExecutor
-  >
-  readonly addRepo: (
-    url: string,
-  ) => Effect<Config, ConfigError, CommandExecutor.CommandExecutor>
-  readonly removeRepo: (
-    name: string,
-  ) => Effect<Config, ConfigError, CommandExecutor.CommandExecutor>
-}
+export class Config extends Schema.Class<Config>("Config")({
+  repos: Schema.Array(Repo),
+}) {}
 
-export type ConfigError = Readonly<{
-  _tag: "ConfigError"
+class ConfigError extends Data.TaggedError("ConfigError")<{
   message: string
-}>
+}> {}
 
-function configError(message: string): ConfigError {
-  return { _tag: "ConfigError", message }
-}
+const defaultConfig = new Config({ repos: [] })
 
-export const ConfigService = GenericTag<ConfigService>(
-  "@lazycontext/ConfigService",
-)
-
-const CONFIG_PATH = ".context/config.json"
-
-const defaultConfig: Config = { repos: [] }
-
+// REVIEW: Make this more readable
 function parseRepoName(url: string): string {
-  const lastSlash = url.lastIndexOf("/")
-  if (lastSlash === -1) {
-    return url.replace(/\.git$/, "")
-  }
-  const nameWithExt = url.slice(lastSlash + 1)
-  return nameWithExt.replace(/\.git$/, "")
+  return (
+    url
+      .split("/")
+      .at(-1)
+      ?.replace(/\.git$/, "") ?? url
+  )
 }
 
-function ensureDirExists(): Effect<
-  void,
-  ConfigError,
-  CommandExecutor.CommandExecutor
-> {
-  return gen(function* ensureDirGen() {
-    const executor = yield* CommandExecutor.CommandExecutor
-    const dirCommand = Command.make("test", "-d", ".context")
-    const result = yield* executor.exitCode(dirCommand).pipe(
-      catchTag("BadArgument", () => fail(configError("Invalid path"))),
-      catchTag("SystemError", (e) =>
-        fail(configError(`System error: ${e.message}`)),
-      ),
-    )
-    if (result !== 0) {
-      const mkdirCommand = Command.make("mkdir", "-p", ".context")
-      const mkdirResult = yield* executor.exitCode(mkdirCommand).pipe(
-        catchTag("BadArgument", () => fail(configError("Invalid path"))),
-        catchTag("SystemError", (e) =>
-          fail(configError(`System error: ${e.message}`)),
-        ),
-      )
-      if (mkdirResult !== 0) {
-        yield* fail(configError("Failed to create .context directory"))
+export class ConfigService extends Effect.Service<ConfigService>()(
+  "@lazycontext/ConfigService",
+  {
+    accessors: true,
+    effect: Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem
+      const path = yield* Path.Path
+
+      const cwd = yield* Effect.sync(() => process.cwd())
+      const configPath = path.join(cwd, "lazycontext.json")
+
+      const ensureDirExists = Effect.gen(function* () {
+        const dirPath = path.join(cwd, ".context")
+        yield* fs.makeDirectory(dirPath, { recursive: true })
+      })
+
+      const readConfigFile = Effect.gen(function* () {
+        const fullPath = path.join(cwd, configPath)
+        const exists = yield* fs.exists(fullPath)
+        if (!exists) return defaultConfig
+
+        const content = yield* fs.readFileString(fullPath)
+
+        const decode = Schema.decodeUnknown(Schema.parseJson(Config))
+        return yield* decode(content)
+      })
+
+      return {
+        load: Effect.fn(function* () {
+          yield* ensureDirExists
+          return yield* readConfigFile
+        }),
+
+        addRepo: Effect.fn(function* (url: string) {
+          const name = parseRepoName(url)
+          const config = yield* readConfigFile
+
+          const existingUrls = new Set(config.repos.map((r) => r.url))
+          if (existingUrls.has(url)) {
+            return config
+          }
+
+          const newConfig = new Config({
+            repos: [...config.repos, new Repo({ name, url })],
+          })
+          const json = yield* Schema.encode(Config)(newConfig)
+          const content = JSON.stringify(json, null, 2)
+          yield* ensureDirExists
+
+          yield* fs.writeFileString(configPath, content)
+          return newConfig
+        }),
+
+        removeRepo: Effect.fn(function* (name: string) {
+          const config = yield* readConfigFile
+
+          const filtered = config.repos.filter((repo) => repo.name !== name)
+          if (filtered.length === config.repos.length) {
+            return yield* new ConfigError({
+              message: `Repository ${name} not found`,
+            })
+          }
+
+          const newConfig = new Config({ repos: filtered })
+          const json = yield* Schema.encode(Config)(newConfig)
+          const content = JSON.stringify(json, null, 2)
+          yield* ensureDirExists
+          const fullPath = path.join(cwd, configPath)
+          yield* fs.writeFileString(fullPath, content)
+          return newConfig
+        }),
       }
-    }
-  })
-}
-
-function readConfigFile(): Effect<
-  Config,
-  ConfigError,
-  CommandExecutor.CommandExecutor
-> {
-  return gen(function* readConfigGen() {
-    const executor = yield* CommandExecutor.CommandExecutor
-    const fileCommand = Command.make("test", "-f", CONFIG_PATH)
-    const existsResult = yield* executor.exitCode(fileCommand).pipe(
-      catchTag("BadArgument", () => fail(configError("Invalid path"))),
-      catchTag("SystemError", (e) =>
-        fail(configError(`System error: ${e.message}`)),
-      ),
-    )
-
-    if (existsResult !== 0) {
-      return defaultConfig
-    }
-
-    const catCommand = Command.make("cat", CONFIG_PATH)
-    const content = yield* executor.string(catCommand).pipe(
-      catchTag("BadArgument", () => fail(configError("Invalid path"))),
-      catchTag("SystemError", (e) =>
-        fail(configError(`System error: ${e.message}`)),
-      ),
-    )
-
-    try {
-      const parsed = JSON.parse(content)
-      if (!Array.isArray(parsed.repos)) {
-        return defaultConfig
-      }
-      return { repos: parsed.repos as Repo[] }
-    } catch {
-      return defaultConfig
-    }
-  })
-}
-
-function writeConfigFile(
-  config: Config,
-): Effect<void, ConfigError, CommandExecutor.CommandExecutor> {
-  return gen(function* writeConfigGen() {
-    const executor = yield* CommandExecutor.CommandExecutor
-    const content = JSON.stringify({ repos: config.repos }, null, 2)
-
-    const tempPath = `${CONFIG_PATH}.tmp.${Date.now()}`
-    const writeCommand = Command.make(
-      "sh",
-      "-c",
-      `echo '${content.replace(/'/g, "'\\''")}' > ${tempPath} && mv ${tempPath} ${CONFIG_PATH}`,
-    )
-    yield* executor.exitCode(writeCommand).pipe(
-      catchTag("BadArgument", () => fail(configError("Invalid path"))),
-      catchTag("SystemError", (e) =>
-        fail(configError(`System error: ${e.message}`)),
-      ),
-    )
-  })
-}
-
-export const load: Effect<
-  Config,
-  ConfigError,
-  CommandExecutor.CommandExecutor
-> = gen(function* loadGen() {
-  yield* ensureDirExists()
-  return yield* readConfigFile()
-})
-
-export const addRepo = (
-  url: string,
-): Effect<Config, ConfigError, CommandExecutor.CommandExecutor> =>
-  gen(function* addRepoGen() {
-    const name = parseRepoName(url)
-    const config = yield* readConfigFile()
-
-    if (config.repos.some((repo) => repo.name === name)) {
-      yield* fail(configError(`Repository ${name} already exists`))
-    }
-
-    const newConfig: Config = {
-      repos: [...config.repos, { name, url }],
-    }
-    yield* writeConfigFile(newConfig)
-    return newConfig
-  })
-
-export const removeRepo = (
-  name: string,
-): Effect<Config, ConfigError, CommandExecutor.CommandExecutor> =>
-  gen(function* removeRepoGen() {
-    const config = yield* readConfigFile()
-
-    const filtered = config.repos.filter((repo) => repo.name !== name)
-    if (filtered.length === config.repos.length) {
-      yield* fail(configError(`Repository ${name} not found`))
-    }
-
-    const newConfig: Config = { repos: filtered }
-    yield* writeConfigFile(newConfig)
-    return newConfig
-  })
-
-export const live: Layer<
-  ConfigService,
-  never,
-  CommandExecutor.CommandExecutor
-> = succeed(ConfigService, {
-  load: () => load,
-  addRepo,
-  removeRepo,
-} as ConfigService)
+    }),
+  },
+) {}
