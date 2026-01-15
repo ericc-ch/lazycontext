@@ -1,7 +1,7 @@
 import { Command, CommandExecutor } from "@effect/platform"
 import { BunCommandExecutor } from "@effect/platform-bun"
 import { Data, Effect } from "effect"
-import type { Repo } from "./config-service"
+import type { Repo } from "./config"
 
 export class GitError extends Data.TaggedError("GitError")<{
   readonly message: string
