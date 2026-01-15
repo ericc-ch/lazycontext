@@ -12,18 +12,13 @@ if (!fs.existsSync(contextRoot)) {
 
 export const repos = [
   {
-    name: "opencode",
-    remote: "https://github.com/sst/opencode.git",
-    branch: "dev",
+    name: "opentui",
+    remote: "https://github.com/anomalyco/opentui.git",
+    branch: "main",
   },
   {
     name: "effect",
     remote: "https://github.com/Effect-TS/effect.git",
-    branch: "main",
-  },
-  {
-    name: "opencode-google-antigravity-auth",
-    remote: "https://github.com/shekohex/opencode-google-antigravity-auth.git",
     branch: "main",
   },
 ]

@@ -32,6 +32,6 @@
     "allowUnreachableCode": false,
 
     "forceConsistentCasingInFileNames": true,
-    "erasableSyntaxOnly": true,
-  },
+    "erasableSyntaxOnly": true
+  }
 }
