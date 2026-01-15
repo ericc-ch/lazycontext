@@ -153,6 +153,65 @@ export function App() {
     }
   }
 
+  const handleSyncAll = async () => {
+    const currentState = state()
+    if (currentState.repos.length === 0) return
+
+    setState((prev) => ({
+      ...prev,
+      message: `Syncing all ${currentState.repos.length} repositories...`,
+      messageType: "info",
+    }))
+
+    try {
+      const statuses = new Map(state().statuses)
+      let syncedCount = 0
+      let failedCount = 0
+
+      for (const repo of currentState.repos) {
+        if (!repo.name) continue
+
+        try {
+          const currentStatus = statuses.get(repo.name)
+
+          if (currentStatus === "missing") {
+            await runApp(GitService.clone(repo, targetDir))
+          } else {
+            await runApp(GitService.pull(repo, targetDir))
+          }
+
+          const newStatus = await runApp(
+            GitService.checkStatus(repo, targetDir),
+          )
+          statuses.set(repo.name, newStatus)
+          syncedCount++
+        } catch {
+          statuses.set(repo.name, "missing")
+          failedCount++
+        }
+      }
+
+      setState((prev) => ({
+        ...prev,
+        statuses,
+        message:
+          failedCount === 0 ?
+            `All ${syncedCount} repositories synced successfully`
+          : `Synced ${syncedCount}, ${failedCount} failed`,
+        messageType: failedCount === 0 ? "success" : "error",
+      }))
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        message:
+          error instanceof Error ?
+            error.message
+          : "Failed to sync repositories",
+        messageType: "error",
+      }))
+    }
+  }
+
   const handleSelect = (index: number) => {
     setState((prev) => ({ ...prev, selectedIndex: index }))
   }
@@ -174,6 +233,8 @@ export function App() {
       setState((prev) => ({ ...prev, view: "add" }))
     } else if (key.name === "enter" && currentState.view === "list") {
       void handleSyncRepo()
+    } else if (key.name === "s" && currentState.view === "list") {
+      void handleSyncAll()
     } else if (key.name === "escape" && currentState.view === "add") {
       setState((prev) => ({ ...prev, view: "list" }))
     }

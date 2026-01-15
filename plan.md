@@ -79,6 +79,6 @@ Create a TUI application using `@opentui`, `solid-js`, and `effect` to manage a 
   - [ ] Update `src/main.tsx` to mount the application.
   - [ ] Implement main App layout with RepoList, InputBar, and StatusBar.
   - [ ] Wire up "Add Repo" flow from UI to ConfigService.
-  - [ ] Wire up "Sync" flow (clone/pull) from UI to GitService.
-  - [ ] Implement "Sync All" functionality.
+  - [x] Wire up "Sync" flow (clone/pull) from UI to GitService.
+  - [x] Implement "Sync All" functionality.
   - [ ] Verify full workflow end-to-end.

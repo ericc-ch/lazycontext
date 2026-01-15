@@ -109,3 +109,20 @@ Completed: Connect UI to Services using Effect runtimes
 
 The UI now integrates with the Effect services using ManagedRuntime.
 Type checks, lint, and tests passed.
+
+---
+
+Completed: Implement "Sync All" functionality
+
+- Added handleSyncAll function in src/App.tsx that:
+  - Iterates over all repositories
+  - Syncs each repo (clone if missing, pull if existing)
+  - Tracks success/failure counts
+  - Updates status map with new statuses
+  - Shows progress message during sync
+  - Displays summary message on completion
+
+- Added keyboard binding 's' for Sync All in handleKeyNavigation
+
+The feature allows users to sync all repositories at once with progress feedback.
+Type checks, lint, and tests passed.
