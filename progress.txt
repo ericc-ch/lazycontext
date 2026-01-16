@@ -35,3 +35,11 @@ Next: Begin working on first task.
   - Updated `src/components/status-bar.tsx`: Made message optional, simplified for
     narrow mode display (version and dimensions only)
   - Type check, lint, and tests passed
+
+---
+- Completed Task 4: Command log full height in side-by-side layout
+  - Updated `src/components/command-log.tsx`: Removed border from header section to
+    maintain borderless theme consistency
+  - Updated `src/app.tsx`: Changed `flexShrink={0}` to `flexShrink={1}` on the right
+    panel container, allowing command log to expand to full available height
+  - Type check, lint, and tests passed

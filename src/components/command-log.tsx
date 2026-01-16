@@ -56,15 +56,7 @@ export function CommandLog(props: CommandLogProps) {
       paddingTop={1}
       paddingBottom={1}
     >
-      <box
-        flexDirection="row"
-        alignItems="center"
-        gap={1}
-        paddingBottom={1}
-        border={true}
-        borderStyle="single"
-        borderColor={theme()?.fg[3] ?? RGBA.fromHex("#3f3f46")}
-      >
+      <box flexDirection="row" alignItems="center" gap={1} paddingBottom={1}>
         <text
           fg={theme()?.fg[5] ?? RGBA.fromHex("#71717a")}
           attributes={TextAttributes.DIM}

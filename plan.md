@@ -114,11 +114,11 @@ export const Logger = Context.Tag("@app/Logger")
 
 **Steps:**
 
-- [ ] 4.1. Modify `src/components/command-log.tsx`: - Set `flexGrow={1}` and `flexShrink={1}` for full height usage - Remove fixed `width={40}` constraint - Ensure internal scrollbox takes full height
+- [x] 4.1. Modify `src/components/command-log.tsx`: - Set `flexGrow={1}` and `flexShrink={1}` for full height usage - Remove fixed `width={40}` constraint - Ensure internal scrollbox takes full height
 
-- [ ] 4.2. Update `src/app.tsx` layout: - Remove `width={40}` constraint from the right-side box (line 321) - Change `flexShrink={0}` to `flexShrink={1}` for right panel - Let the command log expand to fill available space
+- [x] 4.2. Update `src/app.tsx` layout: - Remove `width={40}` constraint from the right-side box (line 321) - Change `flexShrink={0}` to `flexShrink={1}` for right panel - Let the command log expand to fill available space
 
-- [ ] 4.3. Ensure proper scrolling: - The scrollbox inside command log should handle overflow - Show scroll indicators if configured
+- [x] 4.3. Ensure proper scrolling: - The scrollbox inside command log should handle overflow - Show scroll indicators if configured
 
 **Reference Files:**
 

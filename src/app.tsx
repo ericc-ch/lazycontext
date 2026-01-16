@@ -286,7 +286,7 @@ export function App() {
         <box
           flexDirection="column"
           flexGrow={isWide() ? 1 : 1}
-          flexShrink={isWide() ? 0 : 1}
+          flexShrink={isWide() ? 1 : 1}
           flexBasis={0}
         >
           <Show when={state().view === "list"}>
