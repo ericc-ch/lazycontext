@@ -1,8 +1,9 @@
 import { createSignal, onMount, Show } from "solid-js"
 import { useKeyboard, useTerminalDimensions } from "@opentui/solid"
-import { RGBA } from "@opentui/core"
+import { RGBA, type KeyEvent } from "@opentui/core"
 import { ConfigService, type Repo } from "./services/config"
 import { GitService } from "./services/git"
+import { KeybindProvider } from "./services/keybind"
 import { runApp } from "./runtime"
 import { RepoList } from "./components/repo-list"
 import { AddRepo } from "./components/add-repo"
@@ -220,33 +221,48 @@ export function App() {
     setState((prev) => ({ ...prev, selectedIndex: index }))
   }
 
-  const handleKeyNavigation = (key: { name: string }) => {
+  const handleKeyboard = (evt: KeyEvent) => {
     const currentState = state()
 
-    if (key.name === "j" || key.name === "down") {
+    if (KeybindProvider.match("navigate_down", evt)) {
+      evt.preventDefault?.()
       setState((prev) => ({
         ...prev,
         selectedIndex: Math.min(prev.selectedIndex + 1, prev.repos.length - 1),
       }))
-    } else if (key.name === "k" || key.name === "up") {
+    } else if (KeybindProvider.match("navigate_up", evt)) {
+      evt.preventDefault?.()
       setState((prev) => ({
         ...prev,
         selectedIndex: Math.max(prev.selectedIndex - 1, 0),
       }))
-    } else if (key.name === "a") {
+    } else if (KeybindProvider.match("add_repo", evt)) {
+      evt.preventDefault?.()
       setState((prev) => ({ ...prev, view: "add" }))
-    } else if (key.name === "enter" && currentState.view === "list") {
+    } else if (
+      KeybindProvider.match("sync_repo", evt)
+      && currentState.view === "list"
+    ) {
+      evt.preventDefault?.()
       void handleSyncRepo()
-    } else if (key.name === "s" && currentState.view === "list") {
+    } else if (
+      KeybindProvider.match("sync_all", evt)
+      && currentState.view === "list"
+    ) {
+      evt.preventDefault?.()
       void handleSyncAll()
-    } else if (key.name === "escape" && currentState.view === "add") {
+    } else if (
+      KeybindProvider.match("cancel", evt)
+      && currentState.view === "add"
+    ) {
+      evt.preventDefault?.()
       setState((prev) => ({ ...prev, view: "list" }))
     }
   }
 
   onMount(() => {
     void loadConfig()
-    useKeyboard(handleKeyNavigation)
+    useKeyboard(handleKeyboard)
   })
 
   const bgColor = () => theme()?.bg[1] ?? RGBA.fromHex("#0f0f14")

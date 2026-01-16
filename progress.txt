@@ -21,3 +21,14 @@ Next: Begin working on first task.
   - Added `match(action: KeyAction, evt: KeyEvent): boolean` method
   - Handles both single key strings and arrays of keys
   - Typecheck passed, lint shows expected false positive for Effect.gen
+
+---
+
+2026-01-16:
+- Completed Task 3: Refactored app.tsx to use KeybindProvider
+  - Removed hardcoded `handleKeyNavigation` function
+  - Imported and initialized `KeybindProvider`
+  - Updated `useKeyboard` callback to use `keybind.match()` pattern
+  - Added guards for view-specific keybindings (list vs add view)
+  - Updated KeybindProvider to use KeyEventLike interface for flexibility
+  - Typecheck passed, lint shows expected warnings

@@ -37,10 +37,10 @@ Refactor the current keybinding system to follow the centralized architecture de
 
 ### 3. Refactor app.tsx to use KeybindProvider
 
-- [ ] Remove hardcoded `handleKeyNavigation` function
-- [ ] Import and initialize `KeybindProvider`
-- [ ] Update `useKeyboard` callback to use `keybind.match()` pattern
-- [ ] Add guards for view-specific keybindings (list vs add view)
+- [x] Remove hardcoded `handleKeyNavigation` function
+- [x] Import and initialize `KeybindProvider`
+- [x] Update `useKeyboard` callback to use `keybind.match()` pattern
+- [x] Add guards for view-specific keybindings (list vs add view)
 
 ### 4. Update RepoList component (if needed)
 
