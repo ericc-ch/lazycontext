@@ -1,21 +1,19 @@
 import { Command, CommandExecutor } from "@effect/platform"
-import { BunCommandExecutor } from "@effect/platform-bun"
 import { Data, Effect } from "effect"
-import type { Repo } from "./config"
+import type { RepoSchema } from "./config"
 
 export class GitError extends Data.TaggedError("GitError")<{
   readonly message: string
   readonly exitCode?: number
 }> {}
 
-export class GitService extends Effect.Service<GitService>()("GitService", {
+export class Git extends Effect.Service<Git>()("Git", {
   accessors: true,
-  dependencies: [BunCommandExecutor.layer],
   effect: Effect.gen(function* () {
     const executor = yield* CommandExecutor.CommandExecutor
 
     return {
-      clone: Effect.fn(function* (repo: Repo, targetDir: string) {
+      clone: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
         const command = Command.make(
           "git",
           "clone",
@@ -32,7 +30,7 @@ export class GitService extends Effect.Service<GitService>()("GitService", {
         }
       }),
 
-      pull: Effect.fn(function* (repo: Repo, targetDir: string) {
+      pull: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
         const command = Command.make(
           "git",
           "-C",
@@ -49,7 +47,7 @@ export class GitService extends Effect.Service<GitService>()("GitService", {
         }
       }),
 
-      checkStatus: Effect.fn(function* (repo: Repo, targetDir: string) {
+      checkStatus: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
         const dirCommand = Command.make(
           "test",
           "-d",

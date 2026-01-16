@@ -1,19 +1,19 @@
-import { createSignal, onMount, Show } from "solid-js"
-import { useKeyboard, useTerminalDimensions } from "@opentui/solid"
 import { RGBA, type KeyEvent } from "@opentui/core"
-import { ConfigService, type Repo } from "./services/config"
-import { GitService } from "./services/git"
-import { KeybindProvider } from "./services/keybind"
-import { runApp } from "./runtime"
-import { RepoList } from "./components/repo-list"
+import { useKeyboard, useRenderer } from "@opentui/solid"
+import { createSignal, onMount, Show } from "solid-js"
 import { AddRepo } from "./components/add-repo"
-import { StatusBar } from "./components/status-bar"
 import { ThemeProvider, useTheme } from "./components/provider-theme"
+import { RepoList } from "./components/repo-list"
+import { StatusBar } from "./components/status-bar"
+import { match } from "./lib/keybinds"
+import { runtime } from "./runtime"
+import { Config, type RepoSchema } from "./services/config"
+import { Git } from "./services/git"
 
 type View = "list" | "add"
 
 interface AppState {
-  repos: Repo[]
+  repos: RepoSchema[]
   statuses: Map<string, "synced" | "modified" | "missing">
   selectedIndex: number
   view: View
@@ -22,8 +22,9 @@ interface AppState {
 }
 
 export function App() {
+  const renderer = useRenderer()
   const theme = useTheme()
-  const dimensions = useTerminalDimensions()
+
   const [state, setState] = createSignal<AppState>({
     repos: [],
     statuses: new Map(),
@@ -37,7 +38,7 @@ export function App() {
 
   const loadConfig = async () => {
     try {
-      const config = await runApp(ConfigService.load())
+      const config = await runtime.runPromise(Config.load())
       setState((prev) => ({
         ...prev,
         repos: [...config.repos],
@@ -61,7 +62,9 @@ export function App() {
     for (const repo of currentState.repos) {
       if (!repo.name) continue
       try {
-        const status = await runApp(GitService.checkStatus(repo, targetDir))
+        const status = await runtime.runPromise(
+          Git.checkStatus(repo, targetDir),
+        )
         statuses.set(repo.name, status)
       } catch {
         statuses.set(repo.name, "missing")
@@ -80,7 +83,7 @@ export function App() {
     }))
 
     try {
-      const config = await runApp(ConfigService.addRepo(url))
+      const config = await runtime.runPromise(Config.addRepo(url))
 
       setState((prev) => ({
         ...prev,
@@ -91,9 +94,11 @@ export function App() {
 
       const newRepo = config.repos.find((r) => r.url === url)
       if (newRepo && newRepo.name) {
-        await runApp(GitService.clone(newRepo, targetDir))
+        await runtime.runPromise(Git.clone(newRepo, targetDir))
 
-        const status = await runApp(GitService.checkStatus(newRepo, targetDir))
+        const status = await runtime.runPromise(
+          Git.checkStatus(newRepo, targetDir),
+        )
 
         setState((prev) => {
           const newStatuses = new Map(prev.statuses)
@@ -132,12 +137,14 @@ export function App() {
       const currentStatus = statuses.get(repo.name)
 
       if (currentStatus === "missing") {
-        await runApp(GitService.clone(repo, targetDir))
+        await runtime.runPromise(Git.clone(repo, targetDir))
       } else {
-        await runApp(GitService.pull(repo, targetDir))
+        await runtime.runPromise(Git.pull(repo, targetDir))
       }
 
-      const newStatus = await runApp(GitService.checkStatus(repo, targetDir))
+      const newStatus = await runtime.runPromise(
+        Git.checkStatus(repo, targetDir),
+      )
 
       statuses.set(repo.name, newStatus)
       setState((prev) => ({
@@ -180,13 +187,13 @@ export function App() {
           const currentStatus = statuses.get(repo.name)
 
           if (currentStatus === "missing") {
-            await runApp(GitService.clone(repo, targetDir))
+            await runtime.runPromise(Git.clone(repo, targetDir))
           } else {
-            await runApp(GitService.pull(repo, targetDir))
+            await runtime.runPromise(Git.pull(repo, targetDir))
           }
 
-          const newStatus = await runApp(
-            GitService.checkStatus(repo, targetDir),
+          const newStatus = await runtime.runPromise(
+            Git.checkStatus(repo, targetDir),
           )
           statuses.set(repo.name, newStatus)
           syncedCount++
@@ -221,42 +228,48 @@ export function App() {
     setState((prev) => ({ ...prev, selectedIndex: index }))
   }
 
-  const handleKeyboard = (evt: KeyEvent) => {
+  const handleKeyboard = (event: KeyEvent) => {
     const currentState = state()
 
-    if (KeybindProvider.match("navigate_down", evt)) {
-      evt.preventDefault?.()
+    if (match(event, "toggle-console")) {
+      renderer.console.toggle()
+      return
+    }
+
+    if (match(event, "navigate-down")) {
       setState((prev) => ({
         ...prev,
         selectedIndex: Math.min(prev.selectedIndex + 1, prev.repos.length - 1),
       }))
-    } else if (KeybindProvider.match("navigate_up", evt)) {
-      evt.preventDefault?.()
+      return
+    }
+
+    if (match(event, "navigate-up")) {
       setState((prev) => ({
         ...prev,
         selectedIndex: Math.max(prev.selectedIndex - 1, 0),
       }))
-    } else if (KeybindProvider.match("add_repo", evt)) {
-      evt.preventDefault?.()
+      return
+    }
+
+    if (match(event, "repo-add")) {
       setState((prev) => ({ ...prev, view: "add" }))
-    } else if (
-      KeybindProvider.match("sync_repo", evt)
-      && currentState.view === "list"
-    ) {
-      evt.preventDefault?.()
+      return
+    }
+
+    if (match(event, "repo-sync") && currentState.view === "list") {
       void handleSyncRepo()
-    } else if (
-      KeybindProvider.match("sync_all", evt)
-      && currentState.view === "list"
-    ) {
-      evt.preventDefault?.()
+      return
+    }
+
+    if (match(event, "repo-sync-all") && currentState.view === "list") {
       void handleSyncAll()
-    } else if (
-      KeybindProvider.match("cancel", evt)
-      && currentState.view === "add"
-    ) {
-      evt.preventDefault?.()
+      return
+    }
+
+    if (match(event, "cancel") && currentState.view === "add") {
       setState((prev) => ({ ...prev, view: "list" }))
+      return
     }
   }
 
@@ -269,11 +282,6 @@ export function App() {
 
   return (
     <ThemeProvider>
-      <box position="absolute" top={0}>
-        <text>
-          {dimensions().width}x{dimensions().height}
-        </text>
-      </box>
       <box
         flexDirection="column"
         width="100%"

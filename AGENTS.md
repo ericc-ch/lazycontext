@@ -41,6 +41,7 @@ When working with Effect:
 
 - Read `docs/effect.md` for service patterns, error handling, and naming conventions
 - Explore `.context/effect/` for reference implementations
+- Read `https://effect.website/llms.txt` for index of Effect documentation
 
 Do not use subagents when reading from `docs/*`
 Use these as authoritative sources for API usage and coding conventions.

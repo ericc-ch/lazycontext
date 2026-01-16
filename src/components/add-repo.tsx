@@ -1,10 +1,10 @@
 import { createSignal, Show } from "solid-js"
 import { TextAttributes, RGBA } from "@opentui/core"
-import { Repo } from "../services/config"
+import { RepoSchema } from "../services/config"
 import { useTheme } from "./provider-theme"
 
 export interface AddRepoProps {
-  onAdd: (repo: Repo) => void
+  onAdd: (repo: RepoSchema) => void
   onCancel: () => void
 }
 
@@ -20,7 +20,7 @@ export function AddRepo(props: AddRepoProps) {
     if (!inputUrl) return
 
     setStatus("adding")
-    props.onAdd(new Repo({ url: inputUrl }))
+    props.onAdd(new RepoSchema({ url: inputUrl }))
   }
 
   return (

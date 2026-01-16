@@ -5,13 +5,10 @@ import {
   useContext,
   type ParentComponent,
 } from "solid-js"
-import {
-  createColorPalette,
-  createDefaultPalette,
-  type ColorPalette,
-} from "../lib/color"
+import { createColorPalette, createDefaultPalette } from "../lib/color"
 
-const ThemeContext = createContext<() => ColorPalette>()
+const ThemeContext =
+  createContext<() => ReturnType<typeof createDefaultPalette>>()
 
 export const ThemeProvider: ParentComponent = (props) => {
   const renderer = useRenderer()

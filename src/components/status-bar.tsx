@@ -1,5 +1,6 @@
 import { TextAttributes, RGBA } from "@opentui/core"
 import { useTheme } from "./provider-theme"
+import { useTerminalDimensions } from "@opentui/solid"
 
 export interface StatusBarProps {
   message: string
@@ -8,6 +9,7 @@ export interface StatusBarProps {
 
 export function StatusBar(props: StatusBarProps) {
   const theme = useTheme()
+  const dimensions = useTerminalDimensions()
 
   const getColor = () => {
     switch (props.type) {
@@ -51,6 +53,7 @@ export function StatusBar(props: StatusBarProps) {
           attributes={TextAttributes.DIM}
         >
           lazycontext v0.1.0
+          {dimensions().width}x{dimensions().height}
         </text>
       </box>
     </box>

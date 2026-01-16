@@ -1,18 +1,19 @@
-import { BunFileSystem, BunPath } from "@effect/platform-bun"
-import { Effect, Layer, ManagedRuntime } from "effect"
-import { GitService } from "./services/git"
-import { ConfigService } from "./services/config"
+import {
+  BunCommandExecutor,
+  BunFileSystem,
+  BunPath,
+} from "@effect/platform-bun"
+import { Layer, ManagedRuntime, pipe } from "effect"
+import { Config } from "./services/config"
+import { Git } from "./services/git"
 
-const PlatformLayer = Layer.merge(BunFileSystem.layer, BunPath.layer)
-
-const AppLayer = Layer.merge(GitService.Default, ConfigService.Default).pipe(
-  Layer.provide(PlatformLayer),
+const AppLive = pipe(
+  Layer.empty,
+  Layer.merge(Config.Default),
+  Layer.merge(Git.Default),
+  Layer.provide(BunPath.layer),
+  Layer.provide(BunCommandExecutor.layer),
+  Layer.provide(BunFileSystem.layer),
 )
 
-export const runtime = ManagedRuntime.make(AppLayer)
-
-export const runApp = <A, E>(
-  effect: Effect.Effect<A, E, GitService | ConfigService>,
-) => {
-  return runtime.runPromise(effect)
-}
+export const runtime = ManagedRuntime.make(AppLive)

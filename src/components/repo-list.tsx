@@ -1,10 +1,10 @@
 import { For, Show } from "solid-js"
 import { TextAttributes, type MouseEvent, RGBA } from "@opentui/core"
-import type { Repo } from "../services/config"
+import type { RepoSchema } from "../services/config"
 import { useTheme } from "./provider-theme"
 
 export interface RepoItemProps {
-  repo: Repo
+  repo: RepoSchema
   status: "synced" | "modified" | "missing"
   lastUpdate?: string
   selected?: boolean
@@ -95,7 +95,7 @@ export function RepoItem(props: RepoItemProps) {
 }
 
 export interface RepoListProps {
-  repos: Repo[]
+  repos: RepoSchema[]
   statuses: Map<string, "synced" | "modified" | "missing">
   selectedIndex: number
   onSelect: (index: number) => void

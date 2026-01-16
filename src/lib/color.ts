@@ -3,58 +3,54 @@ import { RGBA, type CliRenderer } from "@opentui/core"
 export const DEFAULT_COLORS = {
   bg: "#000000",
   fg: "#ffffff",
-  red: "#ff0000",
-  brightRed: "#ff5555",
-  green: "#00ff00",
-  brightGreen: "#55ff55",
-  yellow: "#ffff00",
-  brightYellow: "#ffff55",
+
   blue: "#0000ff",
-  brightBlue: "#5555ff",
   cyan: "#00ffff",
-  brightCyan: "#55ffff",
+  green: "#00ff00",
+  red: "#ff0000",
+  yellow: "#ffff00",
 
   black: "#000000",
   white: "#ffffff",
 } as const
 
-export interface ColorPalette {
-  primary: Record<number, RGBA>
-  success: Record<number, RGBA>
-  error: Record<number, RGBA>
-  warning: Record<number, RGBA>
-  info: Record<number, RGBA>
-  bg: Record<number, RGBA>
-  fg: Record<number, RGBA>
-  grays: Record<number, RGBA>
-  red: RGBA
-  brightRed: RGBA
-  green: RGBA
-  brightGreen: RGBA
-  yellow: RGBA
-  brightYellow: RGBA
-  blue: RGBA
-  brightBlue: RGBA
-  cyan: RGBA
-  brightCyan: RGBA
-  black: RGBA
-  white: RGBA
-}
-
 async function getTerminalPalette(renderer: CliRenderer) {
   return await renderer.getPalette({ size: 16 })
 }
 
-function generateColorScale(baseColor: RGBA, bg: RGBA): Record<number, RGBA> {
-  const scale: Record<number, RGBA> = {}
-  const bgLum = 0.299 * bg.r * 255 + 0.587 * bg.g * 255 + 0.114 * bg.b * 255
-  const isDark = bgLum < 128
+type ColorScale = [
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+  RGBA,
+]
+
+const LUMA_RED = 0.299
+const LUMA_GREEN = 0.587
+const LUMA_BLUE = 0.114
+
+function luminance(r: number, g: number, b: number): number {
+  return LUMA_RED * r + LUMA_GREEN * g + LUMA_BLUE * b
+}
+
+function generateColorScale(baseColor: RGBA, bg: RGBA) {
+  const scale: ColorScale = [] as unknown as ColorScale
+  const bgLum = luminance(bg.r, bg.g, bg.b)
+  const isDark = bgLum < 0.5
   const r = baseColor.r * 255
   const g = baseColor.g * 255
   const b = baseColor.b * 255
 
-  for (let i = 1; i <= 12; i++) {
-    const t = i / 12.0
+  for (let i = 0; i <= 11; i++) {
+    const t = (i + 1) / 12.0
     const factor = isDark ? 0.4 * t : 0.4 * (1 - t)
     const startMult = isDark ? 1 - factor : factor
     const endMult = isDark ? factor : 1 - factor
@@ -70,41 +66,31 @@ function generateColorScale(baseColor: RGBA, bg: RGBA): Record<number, RGBA> {
   return scale
 }
 
-function generateGrayScale(bg: RGBA): Record<number, RGBA> {
+function generateGrayScale(bg: RGBA) {
   return generateColorScale(RGBA.fromInts(128, 128, 128), bg)
 }
 
-export function createDefaultPalette(): ColorPalette {
+export function createDefaultPalette() {
   const bg = RGBA.fromHex(DEFAULT_COLORS.bg)
   const fg = RGBA.fromHex(DEFAULT_COLORS.fg)
 
   return {
+    bg: generateColorScale(bg, bg),
+    fg: generateColorScale(fg, bg),
+
     primary: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.cyan), bg),
     success: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.green), bg),
     error: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.red), bg),
     warning: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.yellow), bg),
     info: generateColorScale(RGBA.fromHex(DEFAULT_COLORS.blue), bg),
-    bg: generateColorScale(bg, bg),
-    fg: generateColorScale(fg, bg),
+
     grays: generateGrayScale(bg),
-    red: RGBA.fromHex(DEFAULT_COLORS.red),
-    brightRed: RGBA.fromHex(DEFAULT_COLORS.brightRed),
-    green: RGBA.fromHex(DEFAULT_COLORS.green),
-    brightGreen: RGBA.fromHex(DEFAULT_COLORS.brightGreen),
-    yellow: RGBA.fromHex(DEFAULT_COLORS.yellow),
-    brightYellow: RGBA.fromHex(DEFAULT_COLORS.brightYellow),
-    blue: RGBA.fromHex(DEFAULT_COLORS.blue),
-    brightBlue: RGBA.fromHex(DEFAULT_COLORS.brightBlue),
-    cyan: RGBA.fromHex(DEFAULT_COLORS.cyan),
-    brightCyan: RGBA.fromHex(DEFAULT_COLORS.brightCyan),
     black: RGBA.fromHex(DEFAULT_COLORS.black),
     white: RGBA.fromHex(DEFAULT_COLORS.white),
   }
 }
 
-export async function createColorPalette(
-  renderer: CliRenderer,
-): Promise<ColorPalette> {
+export async function createColorPalette(renderer: CliRenderer) {
   const terminal = await getTerminalPalette(renderer)
 
   const defaultBg = terminal.defaultBackground ?? DEFAULT_COLORS.bg
@@ -120,42 +106,21 @@ export async function createColorPalette(
   const fgBase = RGBA.fromHex(defaultFg)
 
   return {
+    bg: generateColorScale(bgBase, bgBase),
+    fg: generateColorScale(fgBase, bgBase),
+
     primary: generateColorScale(RGBA.fromHex(ansiCyan), bgBase),
     success: generateColorScale(RGBA.fromHex(ansiGreen), bgBase),
     error: generateColorScale(RGBA.fromHex(ansiRed), bgBase),
     warning: generateColorScale(RGBA.fromHex(ansiYellow), bgBase),
     info: generateColorScale(RGBA.fromHex(ansiBlue), bgBase),
-    bg: generateColorScale(bgBase, bgBase),
-    fg: generateColorScale(fgBase, bgBase),
+
     grays: generateGrayScale(bgBase),
-    red: RGBA.fromHex(terminal.palette[1] ?? DEFAULT_COLORS.red),
-    brightRed: RGBA.fromHex(DEFAULT_COLORS.brightRed),
-    green: RGBA.fromHex(terminal.palette[2] ?? DEFAULT_COLORS.green),
-    brightGreen: RGBA.fromHex(DEFAULT_COLORS.brightGreen),
-    yellow: RGBA.fromHex(terminal.palette[3] ?? DEFAULT_COLORS.yellow),
-    brightYellow: RGBA.fromHex(DEFAULT_COLORS.brightYellow),
-    blue: RGBA.fromHex(terminal.palette[4] ?? DEFAULT_COLORS.blue),
-    brightBlue: RGBA.fromHex(DEFAULT_COLORS.brightBlue),
-    cyan: RGBA.fromHex(terminal.palette[6] ?? DEFAULT_COLORS.cyan),
-    brightCyan: RGBA.fromHex(DEFAULT_COLORS.brightCyan),
     black: RGBA.fromHex(DEFAULT_COLORS.black),
     white: RGBA.fromHex(DEFAULT_COLORS.white),
-  }
+  } satisfies ReturnType<typeof createDefaultPalette>
 }
 
 export function withAlpha(color: RGBA, alpha: number) {
   return RGBA.fromValues(color.r, color.g, color.b, alpha)
-}
-
-export function rgbaToHex(color: RGBA): string {
-  const r = Math.round(color.r * 255)
-    .toString(16)
-    .padStart(2, "0")
-  const g = Math.round(color.g * 255)
-    .toString(16)
-    .padStart(2, "0")
-  const b = Math.round(color.b * 255)
-    .toString(16)
-    .padStart(2, "0")
-  return `#${r}${g}${b}`
 }
