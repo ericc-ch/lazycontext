@@ -1,17 +1,21 @@
 import { For, Show } from "solid-js"
 import { TextAttributes, type MouseEvent, RGBA } from "@opentui/core"
-import type { RepoSchema } from "../services/config"
+import { RepoSchema } from "../services/config"
 import { useTheme } from "./provider-theme"
+import { RepoItem } from "./repo-item"
 
 export interface RepoItemProps {
   repo: RepoSchema
   status: "synced" | "modified" | "missing"
   lastUpdate?: string
   selected?: boolean
+  editing?: boolean
   onClick?: () => void
+  onSave?: (url: string) => void
+  onCancel?: () => void
 }
 
-export function RepoItem(props: RepoItemProps) {
+export function RepoItemComponent(props: RepoItemProps) {
   const theme = useTheme()
 
   const statusColor = () => {
@@ -41,7 +45,9 @@ export function RepoItem(props: RepoItemProps) {
   }
 
   const handleMouseDown = (_event: MouseEvent) => {
-    props.onClick?.()
+    if (!props.editing) {
+      props.onClick?.()
+    }
   }
 
   return (
@@ -57,39 +63,61 @@ export function RepoItem(props: RepoItemProps) {
       }
       onMouseDown={handleMouseDown}
     >
-      <box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
+      <Show
+        when={props.editing}
+        fallback={
+          <box
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <box flexDirection="row" alignItems="center" gap={2}>
+              <box width={2}>
+                <text
+                  fg={
+                    props.selected ?
+                      (theme()?.info[0] ?? RGBA.fromHex("#00AAFF"))
+                    : (theme()?.grays[5] ?? RGBA.fromHex("#888888"))
+                  }
+                >
+                  {props.selected ? ">" : " "}
+                </text>
+              </box>
+              <text
+                fg={theme()?.fg[0] ?? RGBA.fromHex("#FFFFFF")}
+                attributes={TextAttributes.BOLD}
+              >
+                {props.repo.name}
+              </text>
+            </box>
+            <box flexDirection="row" alignItems="center" gap={2}>
+              <text fg={statusColor()}>{statusText()}</text>
+              <Show when={props.lastUpdate}>
+                <text fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}>
+                  {props.lastUpdate}
+                </text>
+              </Show>
+            </box>
+          </box>
+        }
       >
         <box flexDirection="row" alignItems="center" gap={2}>
           <box width={2}>
-            <text
-              fg={
-                props.selected ?
-                  (theme()?.info[0] ?? RGBA.fromHex("#00AAFF"))
-                : (theme()?.grays[5] ?? RGBA.fromHex("#888888"))
-              }
-            >
-              {props.selected ? ">" : " "}
-            </text>
+            <text fg={theme()?.info[0] ?? RGBA.fromHex("#00AAFF")}>+</text>
           </box>
-          <text
-            fg={theme()?.fg[0] ?? RGBA.fromHex("#FFFFFF")}
-            attributes={TextAttributes.BOLD}
-          >
-            {props.repo.name}
-          </text>
+          <input
+            value={props.repo.url ?? ""}
+            onInput={(value) => props.onSave?.(value)}
+            placeholder="https://github.com/user/repo.git"
+            focused
+            style={{
+              flexGrow: 1,
+              backgroundColor: theme()?.bg[2] ?? RGBA.fromHex("#1a1b26"),
+              cursorColor: theme()?.info[0] ?? RGBA.fromHex("#00AAFF"),
+            }}
+          />
         </box>
-        <box flexDirection="row" alignItems="center" gap={2}>
-          <text fg={statusColor()}>{statusText()}</text>
-          <Show when={props.lastUpdate}>
-            <text fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}>
-              {props.lastUpdate}
-            </text>
-          </Show>
-        </box>
-      </box>
+      </Show>
     </box>
   )
 }
@@ -98,8 +126,13 @@ export interface RepoListProps {
   repos: RepoSchema[]
   statuses: Map<string, "synced" | "modified" | "missing">
   selectedIndex: number
+  editingIndex: number | null
+  editingUrl: string
   onSelect: (index: number) => void
   onEnter?: () => void
+  onStartAdd?: () => void
+  onSaveEdit?: (url: string) => void
+  onCancelEdit?: () => void
 }
 
 export function RepoList(props: RepoListProps) {
@@ -110,6 +143,11 @@ export function RepoList(props: RepoListProps) {
     Array.from(props.statuses.values()).filter((s) => s === "synced").length
   const missingCount = () =>
     Array.from(props.statuses.values()).filter((s) => s === "missing").length
+
+  const editingRepo = () =>
+    props.editingIndex !== null ?
+      new RepoSchema({ url: props.editingUrl, name: undefined })
+    : null
 
   return (
     <box
@@ -145,7 +183,7 @@ export function RepoList(props: RepoListProps) {
 
       <box flexDirection="column" flexGrow={1}>
         <Show
-          when={props.repos.length > 0}
+          when={props.repos.length > 0 || props.editingIndex !== null}
           fallback={
             <box
               flexGrow={1}
@@ -170,6 +208,16 @@ export function RepoList(props: RepoListProps) {
               />
             )}
           </For>
+          <Show when={editingRepo() !== null}>
+            <RepoItem
+              repo={editingRepo()!}
+              status="missing"
+              selected={true}
+              editing={true}
+              onSave={props.onSaveEdit ?? (() => {})}
+              onCancel={props.onCancelEdit ?? (() => {})}
+            />
+          </Show>
         </Show>
       </box>
 

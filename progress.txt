@@ -43,3 +43,13 @@ Next: Begin working on first task.
   - Updated `src/app.tsx`: Changed `flexShrink={0}` to `flexShrink={1}` on the right
     panel container, allowing command log to expand to full available height
   - Type check, lint, and tests passed
+
+---
+- Completed Task 5: New item creation with GitHub link auto-parse
+  - Created `src/components/repo-item.tsx`: New component with editable state support,
+    input field, paste handling via usePaste hook, URL validation using parseGithubUrl
+  - Updated `src/app.tsx`: Added editingIndex and editingUrl to AppState, replaced
+    AddRepo modal with inline editing flow, 'a' key triggers new empty item creation
+  - Updated `src/components/repo-list.tsx`: Added RepoItemComponent for inline editing,
+    supports showing both static and editing items simultaneously
+  - Type check, lint, and tests passed

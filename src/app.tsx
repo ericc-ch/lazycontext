@@ -1,14 +1,13 @@
 import { RGBA, type KeyEvent } from "@opentui/core"
 import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/solid"
 import { createSignal, onMount, Show } from "solid-js"
-import { AddRepo } from "./components/add-repo"
 import { ThemeProvider, useTheme } from "./components/provider-theme"
 import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
 import { match } from "./lib/keybinds"
 import { runtime } from "./runtime"
-import { Config, type RepoSchema } from "./services/config"
+import { Config, RepoSchema } from "./services/config"
 import { Git } from "./services/git"
 import { logStore } from "./services/logger"
 
@@ -19,6 +18,8 @@ interface AppState {
   statuses: Map<string, "synced" | "modified" | "missing">
   selectedIndex: number
   view: View
+  editingIndex: number | null
+  editingUrl: string
 }
 
 export function App() {
@@ -31,6 +32,8 @@ export function App() {
     statuses: new Map(),
     selectedIndex: 0,
     view: "list",
+    editingIndex: null,
+    editingUrl: "",
   })
 
   const targetDir = ".context"
@@ -294,14 +297,26 @@ export function App() {
               repos={state().repos}
               statuses={state().statuses}
               selectedIndex={state().selectedIndex}
+              editingIndex={state().editingIndex}
+              editingUrl={state().editingUrl}
               onSelect={handleSelect}
               onEnter={handleSyncRepo}
-            />
-          </Show>
-          <Show when={state().view === "add"}>
-            <AddRepo
-              onAdd={(repo) => handleAddRepo(repo.url!)}
-              onCancel={() => setState((prev) => ({ ...prev, view: "list" }))}
+              onStartAdd={() => {
+                setState((prev) => ({
+                  ...prev,
+                  editingIndex: prev.repos.length,
+                  editingUrl: "",
+                  view: "list",
+                }))
+              }}
+              onSaveEdit={(url: string) => handleAddRepo(url)}
+              onCancelEdit={() => {
+                setState((prev) => ({
+                  ...prev,
+                  editingIndex: null,
+                  editingUrl: "",
+                }))
+              }}
             />
           </Show>
         </box>

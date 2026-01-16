@@ -133,21 +133,21 @@ export const Logger = Context.Tag("@app/Logger")
 
 **Steps:**
 
-- [ ] 5.1. Modify `src/app.tsx` AppState: - Add `editingIndex: number | null` to track which item is being edited - Add `isAdding: boolean` to track if user is adding a new item
+- [x] 5.1. Modify `src/app.tsx` AppState: - Add `editingIndex: number | null` to track which item is being edited - Add `isAdding: boolean` to track if user is adding a new item
 
-- [ ] 5.2. Create or modify `src/components/repo-item.tsx`: - Add support for editable state with input field - When `editing={true}`, show input instead of static text - Auto-focus the input when entering edit mode - Handle paste events (Ctrl+V) in the input
+- [x] 5.2. Create or modify `src/components/repo-item.tsx`: - Add support for editable state with input field - When `editing={true}`, show input instead of static text - Auto-focus the input when entering edit mode - Handle paste events (Ctrl+V) in the input
 
-- [ ] 5.3. Modify `src/components/repo-list.tsx`: - Accept `editingIndex` prop - Pass `editing` prop to each RepoItem based on index - Support both "static" and "editing" item at the same time (for adding new)
+- [x] 5.3. Modify `src/components/repo-list.tsx`: - Accept `editingIndex` prop - Pass `editing` prop to each RepoItem based on index - Support both "static" and "editing" item at the same time (for adding new)
 
-- [ ] 5.4. Update `src/components/add-repo.tsx` or create new flow: - Instead of modal, add new empty item at end of list in editing mode - User pastes URL or types it - On Enter or blur, parse URL and validate
+- [x] 5.4. Update `src/components/add-repo.tsx` or create new flow: - Instead of modal, add new empty item at end of list in editing mode - User pastes URL or types it - On Enter or blur, parse URL and validate
 
-- [ ] 5.5. Implement URL parsing in `src/lib/url.ts`: - The existing `parseGithubUrl` already does this - Use it to extract owner/repo name from pasted URL
+- [x] 5.5. Implement URL parsing in `src/lib/url.ts`: - The existing `parseGithubUrl` already does this - Use it to extract owner/repo name from pasted URL
 
-- [ ] 5.6. Handle paste events: - Use `usePaste` hook from OpenTUI - When paste detected in editing input, validate if it's a GitHub URL - If valid, auto-fill the name field and prepare for save
+- [x] 5.6. Handle paste events: - Use `usePaste` hook from OpenTUI - When paste detected in editing input, validate if it's a GitHub URL - If valid, auto-fill the name field and prepare for save
 
-- [ ] 5.7. Handle save/cancel: - On Enter: save the new repo (trigger clone) - On Escape: cancel and remove the empty item - On blur without save: ask confirmation or auto-save
+- [x] 5.7. Handle save/cancel: - On Enter: save the new repo (trigger clone) - On Escape: cancel and remove the empty item - On blur without save: ask confirmation or auto-save
 
-- [ ] 5.8. Update keybindings in `src/lib/keybinds.ts`: - `a` key: creates new empty item at end of list, enters edit mode
+- [x] 5.8. Update keybindings in `src/lib/keybinds.ts`: - `a` key: creates new empty item at end of list, enters edit mode
 
 **Reference Files:**
 
@@ -190,7 +190,7 @@ export const Logger = Context.Tag("@app/Logger")
    - [ ] Task 4: Command log full height in side-by-side (layout adjustment)
 
 3. **Phase 3: New Item Flow**
-   - [ ] Task 5: New item creation with GitHub link auto-parse (feature completion)
+   - [x] Task 5: New item creation with GitHub link auto-parse (feature completion)
 
 ---
 
