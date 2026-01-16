@@ -26,3 +26,12 @@ Next: Begin working on first task.
     (log, info, success, error, command), and logStore for UI access
   - Updated `src/services/git.ts`: Integrated logger into clone and pull operations
   - Type check, lint, and tests passed
+---
+- Completed Task 2: Converted StatusBar to Command Log
+  - Created `src/components/command-log.tsx`: New component that displays log entries
+    with timestamps, color-coded types (info/success/error/command), and details
+  - Updated `src/app.tsx`: Removed message/messageType from AppState, integrated
+    logStore for logging operations, replaced StatusBar with CommandLog in wide mode
+  - Updated `src/components/status-bar.tsx`: Made message optional, simplified for
+    narrow mode display (version and dimensions only)
+  - Type check, lint, and tests passed

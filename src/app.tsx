@@ -3,12 +3,14 @@ import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/solid"
 import { createSignal, onMount, Show } from "solid-js"
 import { AddRepo } from "./components/add-repo"
 import { ThemeProvider, useTheme } from "./components/provider-theme"
+import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
 import { match } from "./lib/keybinds"
 import { runtime } from "./runtime"
 import { Config, type RepoSchema } from "./services/config"
 import { Git } from "./services/git"
+import { logStore } from "./services/logger"
 
 type View = "list" | "add"
 
@@ -17,8 +19,6 @@ interface AppState {
   statuses: Map<string, "synced" | "modified" | "missing">
   selectedIndex: number
   view: View
-  message: string
-  messageType: "info" | "success" | "error"
 }
 
 export function App() {
@@ -31,8 +31,6 @@ export function App() {
     statuses: new Map(),
     selectedIndex: 0,
     view: "list",
-    message: "Loading...",
-    messageType: "info",
   })
 
   const targetDir = ".context"
@@ -43,16 +41,16 @@ export function App() {
       setState((prev) => ({
         ...prev,
         repos: [...config.repos],
-        message: "Ready",
       }))
       await checkAllStatuses()
     } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        message:
-          error instanceof Error ? error.message : "Failed to load config",
-        messageType: "error",
-      }))
+      logStore.addLog({
+        id: crypto.randomUUID(),
+        timestamp: new Date(),
+        type: "error",
+        message: "Failed to load config",
+        details: error instanceof Error ? error.message : "Unknown error",
+      })
     }
   }
 
@@ -79,8 +77,6 @@ export function App() {
     setState((prev) => ({
       ...prev,
       view: "list",
-      message: "Adding repository...",
-      messageType: "info",
     }))
 
     try {
@@ -89,8 +85,6 @@ export function App() {
       setState((prev) => ({
         ...prev,
         repos: [...config.repos],
-        message: "Cloning repository...",
-        messageType: "info",
       }))
 
       const newRepo = config.repos.find((r) => r.url === url)
@@ -107,18 +101,17 @@ export function App() {
           return {
             ...prev,
             statuses: newStatuses,
-            message: "Repository added successfully",
-            messageType: "success",
           }
         })
       }
     } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        message:
-          error instanceof Error ? error.message : "Failed to add repository",
-        messageType: "error",
-      }))
+      logStore.addLog({
+        id: crypto.randomUUID(),
+        timestamp: new Date(),
+        type: "error",
+        message: "Failed to add repository",
+        details: error instanceof Error ? error.message : "Unknown error",
+      })
     }
   }
 
@@ -126,12 +119,6 @@ export function App() {
     const currentState = state()
     const repo = currentState.repos[currentState.selectedIndex]
     if (!repo || !repo.name) return
-
-    setState((prev) => ({
-      ...prev,
-      message: `Syncing ${repo.name}...`,
-      messageType: "info",
-    }))
 
     try {
       const statuses = new Map(state().statuses)
@@ -151,30 +138,21 @@ export function App() {
       setState((prev) => ({
         ...prev,
         statuses,
-        message: `${repo.name} synced successfully`,
-        messageType: "success",
       }))
     } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        message:
-          error instanceof Error ?
-            error.message
-          : `Failed to sync ${repo.name}`,
-        messageType: "error",
-      }))
+      logStore.addLog({
+        id: crypto.randomUUID(),
+        timestamp: new Date(),
+        type: "error",
+        message: `Failed to sync ${repo.name}`,
+        details: error instanceof Error ? error.message : "Unknown error",
+      })
     }
   }
 
   const handleSyncAll = async () => {
     const currentState = state()
     if (currentState.repos.length === 0) return
-
-    setState((prev) => ({
-      ...prev,
-      message: `Syncing all ${currentState.repos.length} repositories...`,
-      messageType: "info",
-    }))
 
     try {
       const statuses = new Map(state().statuses)
@@ -207,21 +185,27 @@ export function App() {
       setState((prev) => ({
         ...prev,
         statuses,
-        message:
-          failedCount === 0 ?
-            `All ${syncedCount} repositories synced successfully`
-          : `Synced ${syncedCount}, ${failedCount} failed`,
-        messageType: failedCount === 0 ? "success" : "error",
       }))
+
+      if (syncedCount > 0 || failedCount > 0) {
+        logStore.addLog({
+          id: crypto.randomUUID(),
+          timestamp: new Date(),
+          type: failedCount === 0 ? "success" : "error",
+          message:
+            failedCount === 0 ?
+              `All ${syncedCount} repositories synced successfully`
+            : `Synced ${syncedCount}, ${failedCount} failed`,
+        })
+      }
     } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        message:
-          error instanceof Error ?
-            error.message
-          : "Failed to sync repositories",
-        messageType: "error",
-      }))
+      logStore.addLog({
+        id: crypto.randomUUID(),
+        timestamp: new Date(),
+        type: "error",
+        message: "Failed to sync repositories",
+        details: error instanceof Error ? error.message : "Unknown error",
+      })
     }
   }
 
@@ -322,17 +306,11 @@ export function App() {
           </Show>
         </box>
         <Show when={isWide()}>
-          <box width={40}>
-            <StatusBar
-              message={state().message}
-              type={state().messageType}
-              layout="vertical"
-            />
-          </box>
+          <CommandLog logs={logStore.getLogs()} />
         </Show>
       </box>
       <Show when={!isWide()}>
-        <StatusBar message={state().message} type={state().messageType} />
+        <StatusBar layout="horizontal" />
       </Show>
     </ThemeProvider>
   )

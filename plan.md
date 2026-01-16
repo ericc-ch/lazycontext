@@ -46,9 +46,9 @@ Redesign the app with:
 
 **Steps:**
 
-- [ ] 2.1. Create new component `src/components/command-log.tsx`: - Accept list of log entries (array of objects with timestamp, type, message) - Display logs in reverse chronological order (newest first) - Support scrollable view for many entries - Show timestamps and color-coded message types (info, success, error, command) - Auto-scroll to top when new entries added - Full height in side-by-side layout (remove width constraint)
+- [x] 2.1. Create new component `src/components/command-log.tsx`: - Accept list of log entries (array of objects with timestamp, type, message) - Display logs in reverse chronological order (newest first) - Support scrollable view for many entries - Show timestamps and color-coded message types (info, success, error, command) - Auto-scroll to top when new entries added - Full height in side-by-side layout (remove width constraint)
 
-- [ ] 2.2. Design log entry structure:
+- [x] 2.2. Design log entry structure:
       `typescript
 interface LogEntry {
   id: string
@@ -59,9 +59,9 @@ interface LogEntry {
 }
 `
 
-- [ ] 2.3. Update `src/components/status-bar.tsx`: - Remove or repurpose this component - Can be used as-is for narrow mode (horizontal layout)
+- [x] 2.3. Update `src/components/status-bar.tsx`: - Remove or repurpose this component - Can be used as-is for narrow mode (horizontal layout)
 
-- [ ] 2.4. Update `src/app.tsx`: - Remove `message` and `messageType` from AppState - Add `commandLogs: LogEntry[]` to AppState - Update StatusBar usage to CommandLog in wide mode - Pass logs array to CommandLog component
+- [x] 2.4. Update `src/app.tsx`: - Remove `message` and `messageType` from AppState - Add `commandLogs: LogEntry[]` to AppState - Update StatusBar usage to CommandLog in wide mode - Pass logs array to CommandLog component
 
 **Reference Files:**
 
@@ -186,7 +186,7 @@ export const Logger = Context.Tag("@app/Logger")
 
 2. **Phase 2: Logger & Command Log**
    - [x] Task 3: Create custom Effect Logger (core infrastructure)
-   - [ ] Task 2: Convert StatusBar to Command Log (UI for logger)
+   - [x] Task 2: Convert StatusBar to Command Log (UI for logger)
    - [ ] Task 4: Command log full height in side-by-side (layout adjustment)
 
 3. **Phase 3: New Item Flow**

@@ -1,9 +1,10 @@
+import { Show } from "solid-js"
 import { TextAttributes, RGBA } from "@opentui/core"
 import { useTheme } from "./provider-theme"
 import { useTerminalDimensions } from "@opentui/solid"
 
 export interface StatusBarProps {
-  message: string
+  message?: string
   type?: "info" | "success" | "error"
   layout?: "horizontal" | "vertical"
 }
@@ -36,17 +37,19 @@ export function StatusBar(props: StatusBarProps) {
       alignItems="flex-start"
       gap={layout() === "vertical" ? 1 : 0}
     >
-      <box flexDirection="row" alignItems="center" gap={1}>
-        <text
-          fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
-          attributes={TextAttributes.DIM}
-        >
-          Status
-        </text>
-        <text fg={getColor() ?? RGBA.fromHex("#888888")}>
-          {props.message || "Ready"}
-        </text>
-      </box>
+      <Show when={props.message}>
+        <box flexDirection="row" alignItems="center" gap={1}>
+          <text
+            fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
+            attributes={TextAttributes.DIM}
+          >
+            Status
+          </text>
+          <text fg={getColor() ?? RGBA.fromHex("#888888")}>
+            {props.message || "Ready"}
+          </text>
+        </box>
+      </Show>
       <box flexDirection="row" alignItems="center" gap={1}>
         <text
           fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}
