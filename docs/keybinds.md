@@ -2,17 +2,17 @@
 
 ## Overview
 
-OpenCode uses a centralized keybinding system with three layers:
+Uses a centralized keybinding system with two layers:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  CONFIG LAYER                                           │
-│  Your opencode.json: { "new_session": "ctrl+n" }        │
+│  KEYBIND LAYER                                          │
+│  keybinds.ts: { new_session: "ctrl+n", ... }            │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
 │  CONTEXT LAYER                                          │
-│  KeybindProvider: stores parsed config, match() method  │
+│  KeybindProvider: stores keybinds, match() method       │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -21,23 +21,24 @@ OpenCode uses a centralized keybinding system with three layers:
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Config Layer
+## Keybind Layer
 
-Keybindings are defined in `opencode.json`:
+Keybindings are defined in `src/lib/keybinds.ts`:
 
-```json
-{
-  "keybinds": {
-    "new_session": "ctrl+n",
-    "delete_item": "ctrl+d",
-    "toggle_sidebar": "ctrl+b"
-  }
+```typescript
+export const keybinds = {
+  navigate_down: ["j", "down"],
+  navigate_up: ["k", "up"],
+  add_repo: "a",
+  sync_repo: "enter",
+  sync_all: "s",
+  cancel: "escape",
 }
 ```
 
 ## Context Layer
 
-The `KeybindProvider` reads config and provides a `match()` method:
+The `KeybindProvider` provides a `match()` method:
 
 ```typescript
 const keybind = useKeybind()
@@ -104,7 +105,7 @@ Session checks: dialog closed? NO → returns early, does nothing
 
 | Problem             | Solution                                                  |
 | ------------------- | --------------------------------------------------------- |
-| Centralized config  | Single JSON file, parsed once in context                  |
+| Centralized config  | Single TS object, imported directly                       |
 | Global vs local     | Components check their own state (isDialogOpen, isActive) |
 | Conflict resolution | First handler to call `preventDefault()` wins             |
-| Display keybinds    | Call helper to format config for UI labels                |
+| Display keybinds    | Call helper to format keybinds for UI labels              |

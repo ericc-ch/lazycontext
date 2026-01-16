@@ -2,7 +2,7 @@
 
 ## Commands
 
-- `bun run dev` — Run the application in development mode
+- `bun run stars` — Run the application
 - `bun run format` — Run prettier on all files
 - `bun run lint` — Run oxlint with type-aware rules
 - `bun run typecheck` — Run TypeScript compiler

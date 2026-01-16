@@ -6,27 +6,3 @@ Project initialized with Ralph workflow.
 Next: Begin working on first task.
 
 ---
-
-2026-01-16: Fixed src/components/provider-theme.tsx - Created missing `createDefaultPalette` function in src/lib/color.ts to provide proper initial value for theme resource. Updated plan.md, ran typecheck, lint, and tests - all pass.
-
-2026-01-16: Updated src/app.tsx - Replaced hardcoded backgroundColor "#0f0f14" with theme color using useTheme() hook and ThemeProvider. Added rgbaToHex helper in src/lib/color.ts for color conversion. Ran typecheck, lint, and tests - all pass.
-
-Next: Update src/components/status-bar.tsx
-
----
-
-2026-01-16: Updated src/components/status-bar.tsx - Replaced all hardcoded colors with theme colors using useTheme() hook. Background "#1a1b26" → theme()?.bg[2], border "#334455" → theme()?.fg[3], dim text "#666666" → theme()?.fg[5], status colors mapped to success/error/info scales. Added RGBA fallback values for type safety. Ran typecheck, lint, and tests - all pass.
-
-Next: Update src/components/repo-list.tsx
-
----
-
-2026-01-16: Updated src/components/repo-list.tsx - Replaced all hardcoded colors with theme colors using useTheme() hook. Status colors mapped to success/warning/error scales, background colors to bg[2], borders to fg[3], dim text to fg[5], primary text to fg[0], and selection indicator to info[0]. Added RGBA fallback values for type safety. Ran typecheck, lint, and tests - all pass.
-
-Next: Update src/components/add-repo.tsx
-
----
-
-2026-01-16: Updated src/components/add-repo.tsx - Replaced all hardcoded colors with theme colors using useTheme() hook. Border "#334455" → theme()?.fg[3], primary text "#00AAFF" → theme()?.info[0], label "#888888" → theme()?.grays[5], input background "#1a1b26" → theme()?.bg[2], dim text "#666666" → theme()?.fg[5], status colors mapped to success/info/error scales. Added RGBA fallback values for type safety. Ran typecheck, lint, and tests - all pass.
-
-<promise>COMPLETE</promise>
