@@ -1,5 +1,5 @@
 import { RGBA, type KeyEvent } from "@opentui/core"
-import { useKeyboard, useRenderer } from "@opentui/solid"
+import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/solid"
 import { createSignal, onMount, Show } from "solid-js"
 import { AddRepo } from "./components/add-repo"
 import { ThemeProvider, useTheme } from "./components/provider-theme"
@@ -24,6 +24,7 @@ interface AppState {
 export function App() {
   const renderer = useRenderer()
   const theme = useTheme()
+  const dimensions = useTerminalDimensions()
 
   const [state, setState] = createSignal<AppState>({
     repos: [],
@@ -279,11 +280,12 @@ export function App() {
   })
 
   const bgColor = () => theme()?.bg[1] ?? RGBA.fromHex("#0f0f14")
+  const isWide = () => dimensions().width >= 100
 
   return (
     <ThemeProvider>
       <box
-        flexDirection="column"
+        flexDirection={isWide() ? "row" : "column"}
         width="100%"
         height="100%"
         backgroundColor={bgColor()}
@@ -291,8 +293,14 @@ export function App() {
         paddingRight={1}
         paddingTop={1}
         paddingBottom={1}
+        gap={1}
       >
-        <box flexDirection="column" flexGrow={1} gap={1}>
+        <box
+          flexDirection="column"
+          flexGrow={isWide() ? 1 : 1}
+          flexShrink={isWide() ? 0 : 1}
+          flexBasis={0}
+        >
           <Show when={state().view === "list"}>
             <RepoList
               repos={state().repos}
@@ -309,8 +317,19 @@ export function App() {
             />
           </Show>
         </box>
-        <StatusBar message={state().message} type={state().messageType} />
+        <Show when={isWide()}>
+          <box width={40}>
+            <StatusBar
+              message={state().message}
+              type={state().messageType}
+              layout="vertical"
+            />
+          </box>
+        </Show>
       </box>
+      <Show when={!isWide()}>
+        <StatusBar message={state().message} type={state().messageType} />
+      </Show>
     </ThemeProvider>
   )
 }

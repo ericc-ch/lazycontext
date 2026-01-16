@@ -5,11 +5,13 @@ import { useTerminalDimensions } from "@opentui/solid"
 export interface StatusBarProps {
   message: string
   type?: "info" | "success" | "error"
+  layout?: "horizontal" | "vertical"
 }
 
 export function StatusBar(props: StatusBarProps) {
   const theme = useTheme()
   const dimensions = useTerminalDimensions()
+  const layout = () => props.layout ?? "horizontal"
 
   const getColor = () => {
     switch (props.type) {
@@ -29,9 +31,10 @@ export function StatusBar(props: StatusBarProps) {
       paddingTop={1}
       paddingBottom={1}
       backgroundColor={theme()?.bg[2] ?? RGBA.fromHex("#1a1b26")}
-      flexDirection="row"
+      flexDirection={layout() === "vertical" ? "column" : "row"}
       justifyContent="space-between"
-      alignItems="center"
+      alignItems="flex-start"
+      gap={layout() === "vertical" ? 1 : 0}
       border
       borderColor={theme()?.fg[3] ?? RGBA.fromHex("#334455")}
       borderStyle="single"
