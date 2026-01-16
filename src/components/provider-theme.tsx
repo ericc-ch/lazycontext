@@ -1,24 +1,13 @@
-import { useRenderer } from "@opentui/solid"
-import {
-  createContext,
-  createResource,
-  useContext,
-  type ParentComponent,
-} from "solid-js"
-import { createColorPalette, createDefaultPalette } from "../lib/color"
+import { createContext, useContext, type ParentComponent } from "solid-js"
+import { createColorPalette } from "../lib/color"
 
-const ThemeContext =
-  createContext<() => ReturnType<typeof createDefaultPalette>>()
+type Theme = Awaited<ReturnType<typeof createColorPalette>>
 
-export const ThemeProvider: ParentComponent = (props) => {
-  const renderer = useRenderer()
+const ThemeContext = createContext<() => Theme>()
 
-  const [theme] = createResource(renderer, createColorPalette, {
-    initialValue: createDefaultPalette(),
-  })
-
+export const ThemeProvider: ParentComponent<{ theme: Theme }> = (props) => {
   return (
-    <ThemeContext.Provider value={theme}>
+    <ThemeContext.Provider value={() => props.theme}>
       {props.children}
     </ThemeContext.Provider>
   )

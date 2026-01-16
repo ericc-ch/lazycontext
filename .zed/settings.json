@@ -4,16 +4,16 @@
     "vtsls": {
       "settings": {
         "vtsls": {
-          "autoUseWorkspaceTsdk": true,
-        },
-      },
+          "autoUseWorkspaceTsdk": true
+        }
+      }
     },
     "oxlint": {
       "initialization_options": {
         "settings": {
-          "typeAware": true,
-        },
-      },
-    },
-  },
+          "typeAware": true
+        }
+      }
+    }
+  }
 }

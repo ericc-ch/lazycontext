@@ -2,7 +2,7 @@
 
 ## Commands
 
-- `bun run stars` — Run the application
+- `bun run start` — Run the application
 - `bun run format` — Run prettier on all files
 - `bun run lint` — Run oxlint with type-aware rules
 - `bun run typecheck` — Run TypeScript compiler
@@ -30,6 +30,15 @@ import { TextAttributes } from "@opentui/core" // Use barrel import
 import { render } from "@opentui/solid"
 ```
 
+## Design Principles
+
+- **Intentional Aesthetics**: Commit to a bold direction before coding—minimalist, maximalist, retro, or experimental. Define purpose, tone, and what makes it unforgettable
+- **Spatial Composition**: Use asymmetry, overlap, diagonal flow, and grid-breaking layouts. Create visual tension through unexpected spacing
+- **Terminal Typography**: Choose fonts intentionally; avoid default monospace. Consider ANSI color palette, truecolor, and Unicode box-drawing characters
+- **Accessibility First**: Support screen readers, keyboard navigation, and high-contrast modes. Ensure readability across terminal emulators
+- **Expert Craftsmanship**: Every detail matters—consistent spacing, purposeful color choices, and refined interactions
+- **Differentiation**: Avoid generic TUI patterns. Create memorable experiences through unique spatial relationships and visual language
+
 ## Context & References
 
 When working with OpenTUI:
@@ -51,3 +60,4 @@ Use these as authoritative sources for API usage and coding conventions.
 1. First, explore `.context/` directories for reference implementations and patterns
 2. Then, read relevant `docs/*.md` files for API usage and conventions
 3. Only use the documentation tool (Context7) when information is not available in context or docs directories
+4. Use `github_grep` to find real-world code examples from public repositories for implementation patterns and best practices
