@@ -29,11 +29,11 @@ Refactor the current keybinding system to follow the centralized architecture de
 
 ### 2. Create KeybindProvider service
 
-- [ ] Create `src/services/keybind.ts`
-- [ ] Implement `KeybindProvider` class with Effect.Service pattern
-- [ ] Import `keybinds` from `src/lib/keybinds.ts`
-- [ ] Add `match(action: string, evt: KeyEvent): boolean` method
-- [ ] Handle single key strings and arrays of keys
+- [x] Create `src/services/keybind.ts`
+- [x] Implement `KeybindProvider` class with Effect.Service pattern
+- [x] Import `keybinds` from `src/lib/keybinds.ts`
+- [x] Add `match(action: string, evt: KeyEvent): boolean` method
+- [x] Handle single key strings and arrays of keys
 
 ### 3. Refactor app.tsx to use KeybindProvider
 

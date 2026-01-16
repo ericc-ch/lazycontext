@@ -13,3 +13,11 @@ Next: Begin working on first task.
   - Mapped actions to keys: ["j", "down"], ["k", "up"], "a", "enter", "s", "escape"
 
 ---
+
+---
+2026-01-16:
+- Completed Task 2: Created `src/services/keybind.ts` with KeybindProvider service
+  - Implemented Effect.Service pattern matching existing ConfigService style
+  - Added `match(action: KeyAction, evt: KeyEvent): boolean` method
+  - Handles both single key strings and arrays of keys
+  - Typecheck passed, lint shows expected false positive for Effect.gen
