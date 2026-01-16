@@ -272,6 +272,10 @@ export function App() {
       setState((prev) => ({ ...prev, view: "list" }))
       return
     }
+
+    if (match(event, "quit")) {
+      process.exit(0)
+    }
   }
 
   onMount(() => {

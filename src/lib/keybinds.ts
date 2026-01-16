@@ -8,6 +8,7 @@ export type KeyAction =
   | "repo-sync"
   | "repo-sync-all"
   | "cancel"
+  | "quit"
 
 export const keybinds = new Map<KeyAction, string | string[]>([
   ["toggle-console", "f12"],
@@ -17,6 +18,7 @@ export const keybinds = new Map<KeyAction, string | string[]>([
   ["repo-sync", "enter"],
   ["repo-sync-all", "s"],
   ["cancel", "escape"],
+  ["quit", "q"],
 ])
 
 export const match = (event: KeyEvent, action: KeyAction) => {
