@@ -44,25 +44,27 @@ Refactor the current keybinding system to follow the centralized architecture de
 
 ### 4. Update RepoList component (if needed)
 
-- [ ] Check if RepoList has local keyboard handlers
-- [ ] Refactor to use KeybindProvider pattern if present
+- [x] Check if RepoList has local keyboard handlers
+- [x] Refactor to use KeybindProvider pattern if present
+- [x] No local handlers found - component uses mouse events only
 
 ### 5. Update AddRepo component (if needed)
 
-- [ ] Check if AddRepo has local keyboard handlers
-- [ ] Refactor to use KeybindProvider pattern if present
+- [x] Check if AddRepo has local keyboard handlers
+- [x] Refactor to use KeybindProvider pattern if present
+- [x] No local handlers found - uses OpenTUI input built-in handling
 
 ### 6. Verify global vs local keybinding behavior
 
-- [ ] Test that global handlers don't trigger when dialogs are open
-- [ ] Test that local handlers only trigger when component is active
-- [ ] Verify `preventDefault()` conflict resolution works correctly
+- [x] Test that global handlers don't trigger when dialogs are open
+- [x] Test that local handlers only trigger when component is active
+- [x] Verify `preventDefault()` conflict resolution works correctly
 
 ### 7. Run linting and type checking
 
-- [ ] Run `bun run lint`
-- [ ] Run `bun run typecheck`
-- [ ] Fix any issues
+- [x] Run `bun run lint`
+- [x] Run `bun run typecheck`
+- [x] Fix any issues
 
 ---
 
