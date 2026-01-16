@@ -9,7 +9,6 @@ import { match } from "./lib/keybinds"
 import { runtime } from "./runtime"
 import { Config, RepoSchema } from "./services/config"
 import { Git } from "./services/git"
-import { logStore } from "./services/logger"
 
 type View = "list" | "add"
 

@@ -1,62 +1,51 @@
-export interface LogEntry {
-  readonly id: string
-  readonly timestamp: Date
-  readonly type: "info" | "success" | "error" | "command"
-  readonly message: string
-  readonly details?: string
+import { PlatformLogger } from "@effect/platform"
+import { Effect, Inspectable, Logger, LogLevel, pipe } from "effect"
+import path from "node:path"
+import type { OpenCodeLogLevel } from "../types"
+import { PLUGIN_NAME, ProviderConfig } from "../services/config"
+import { OpenCodeContext } from "../services/opencode"
+import { xdgData } from "xdg-basedir"
+
+interface MemoryLog {
+  level: LogLevel.Literal
+  message: string
 }
 
-const _logs: LogEntry[] = []
+const logs: MemoryLog[] = []
 
-const createEntry = (
-  type: LogEntry["type"],
-  message: string,
-  details?: string,
-): LogEntry => ({
-  id: crypto.randomUUID(),
-  timestamp: new Date(),
-  type,
-  message,
-  ...(details && { details }),
+const makeOpenCodeLogger = Effect.gen(function* () {
+  const openCode = yield* OpenCodeContext
+  const config = yield* ProviderConfig
+
+  return Logger.make((log) => {
+    let level: OpenCodeLogLevel = "debug"
+
+    if (LogLevel.greaterThanEqual(log.logLevel, LogLevel.Error)) {
+      level = "error"
+    } else if (LogLevel.greaterThanEqual(log.logLevel, LogLevel.Warning)) {
+      level = "warn"
+    } else if (LogLevel.greaterThanEqual(log.logLevel, LogLevel.Info)) {
+      level = "info"
+    }
+
+    const message = Inspectable.toStringUnknown(log.message)
+
+    void openCode.client.app.log({
+      body: {
+        level,
+        message,
+        service: config.SERVICE_NAME,
+      },
+    })
+  })
 })
 
-export const logStore = {
-  getLogs: () => [..._logs],
-  addLog: (entry: LogEntry) => {
-    _logs.unshift(entry)
-    if (_logs.length > 1000) {
-      _logs.pop()
-    }
-  },
-  clear: () => {
-    _logs.length = 0
-  },
-}
+export const combinedLogger = Effect.gen(function* () {
+  const openCodeLogger = yield* makeOpenCodeLogger
+  const fileLogger = yield* pipe(
+    Logger.jsonLogger,
+    PlatformLogger.toFile(path.join(LOG_DIR, `${PLUGIN_NAME}.log`)),
+  )
 
-export const logger = {
-  log: (message: string, details?: string) => {
-    console.log(message, details ?? "")
-    logStore.addLog(createEntry("info", message, details))
-  },
-
-  info: (message: string, details?: string) => {
-    console.log(message, details ?? "")
-    logStore.addLog(createEntry("info", message, details))
-  },
-
-  success: (message: string, details?: string) => {
-    console.log(message, details ?? "")
-    logStore.addLog(createEntry("success", message, details))
-  },
-
-  error: (message: string, details?: string) => {
-    console.error(message, details ?? "")
-    logStore.addLog(createEntry("error", message, details))
-  },
-
-  command: (command: string, args: string[]) => {
-    const fullCommand = [command, ...args].join(" ")
-    console.log(`$ ${fullCommand}`)
-    logStore.addLog(createEntry("command", fullCommand))
-  },
-}
+  return Logger.zip(openCodeLogger, fileLogger)
+})

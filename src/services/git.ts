@@ -1,7 +1,6 @@
 import { Command, CommandExecutor } from "@effect/platform"
 import { Data, Effect } from "effect"
 import type { RepoSchema } from "./config"
-import { logger } from "./logger"
 
 export class GitError extends Data.TaggedError("GitError")<{
   readonly message: string
