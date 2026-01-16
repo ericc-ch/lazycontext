@@ -1,6 +1,7 @@
 import { Command, CommandExecutor } from "@effect/platform"
 import { Data, Effect } from "effect"
 import type { RepoSchema } from "./config"
+import { logger } from "./logger"
 
 export class GitError extends Data.TaggedError("GitError")<{
   readonly message: string
@@ -14,6 +15,13 @@ export class Git extends Effect.Service<Git>()("Git", {
 
     return {
       clone: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
+        logger.command("git", [
+          "clone",
+          "--quiet",
+          repo.url,
+          `${targetDir}/${repo.name}`,
+        ])
+
         const command = Command.make(
           "git",
           "clone",
@@ -28,9 +36,17 @@ export class Git extends Effect.Service<Git>()("Git", {
             exitCode: result,
           })
         }
+        logger.success(`Cloned ${repo.url}`)
       }),
 
       pull: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
+        logger.command("git", [
+          "-C",
+          `${targetDir}/${repo.name}`,
+          "pull",
+          "--quiet",
+        ])
+
         const command = Command.make(
           "git",
           "-C",
@@ -41,10 +57,11 @@ export class Git extends Effect.Service<Git>()("Git", {
         const result = yield* executor.exitCode(command)
         if (result !== 0) {
           return yield* new GitError({
-            message: `Failed to clone ${repo.url}`,
+            message: `Failed to pull ${repo.url}`,
             exitCode: result,
           })
         }
+        logger.success(`Pulled ${repo.name}`)
       }),
 
       checkStatus: Effect.fn(function* (repo: RepoSchema, targetDir: string) {

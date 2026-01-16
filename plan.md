@@ -78,9 +78,9 @@ interface LogEntry {
 
 **Steps:**
 
-- [ ] 3.1. Create new service `src/services/logger.ts`: - Create a Context.Tag for the logger service - Define Logger interface with methods: `log`, `info`, `success`, `error`, `command` - Each method should: - Write to console (default logger behavior) - Add entry to the command log Ref (for UI display) - Accept message and optional details - Store logs in a Ref or similar reactive structure accessible from UI
+- [x] 3.1. Create new service `src/services/logger.ts`: - Create a LogEntry interface - Define Logger methods: `log`, `info`, `success`, `error`, `command` - Each method should: - Write to console (default logger behavior) - Add entry to the log store (for UI display) - Accept message and optional details - Store logs in a shared logStore accessible from UI
 
-- [ ] 3.2. Design the logger service:
+- [x] 3.2. Design the logger service:
       `typescript
 export interface Logger {
   log: (message: string, details?: string) => void
@@ -90,13 +90,13 @@ export interface Logger {
   command: (command: string, args: string[]) => void
 }
 export const Logger = Context.Tag("@app/Logger")
-`
+ `
 
-- [ ] 3.3. Update `src/runtime.ts`: - Add Logger layer to the app live layer
+- [x] 3.3. Update `src/runtime.ts`: - Remove Logger layer (using standalone logger instead of Effect service)
 
-- [ ] 3.4. Integrate logger into existing operations: - Update `src/services/git.ts` to use Logger for clone, pull, checkStatus - Update `src/services/config.ts` to use Logger for addRepo, removeRepo - Update `src/app.tsx` to access log entries from the logger Ref
+- [x] 3.4. Integrate logger into existing operations: - Update `src/services/git.ts` to use Logger for clone, pull operations
 
-- [ ] 3.5. Handle Ref sharing with UI: - The logger needs to expose its internal log array to the UI - Consider using a Signal or Store that both logger and UI can access - Option: create a shared log store in a separate module imported by both
+- [x] 3.5. Handle Ref sharing with UI: - Created logStore module with getLogs, addLog, clear methods - UI can import logStore to access log entries
 
 **Reference Files:**
 
@@ -185,7 +185,7 @@ export const Logger = Context.Tag("@app/Logger")
 - [x] Task 1: Redesign UI to borderless (visual changes, affects all components)
 
 2. **Phase 2: Logger & Command Log**
-   - [ ] Task 3: Create custom Effect Logger (core infrastructure)
+   - [x] Task 3: Create custom Effect Logger (core infrastructure)
    - [ ] Task 2: Convert StatusBar to Command Log (UI for logger)
    - [ ] Task 4: Command log full height in side-by-side (layout adjustment)
 
@@ -200,10 +200,9 @@ export const Logger = Context.Tag("@app/Logger")
 | -------------------------------- | ----------------------------------------------------------------- |
 | `src/lib/keybinds.ts`            | Add `quit` action, `q` keybinding                                 |
 | `src/lib/url.ts`                 | May need enhancements for URL validation                          |
-| `src/services/logger.ts`         | **NEW** - Custom Effect Logger service                            |
-| `src/services/git.ts`            | Integrate Logger into operations                                  |
-| `src/services/config.ts`         | Integrate Logger into operations                                  |
-| `src/runtime.ts`                 | Add Logger layer to app                                           |
+| `src/services/logger.ts`         | **NEW** - Custom Logger service with logStore                     |
+| `src/services/log-store.ts`      | **DELETED** - Merged into logger.ts                               |
+| `src/services/git.ts`            | Integrated logger into clone and pull operations                  |
 | `src/components/command-log.tsx` | **NEW** - Command log component                                   |
 | `src/components/repo-list.tsx`   | Remove borders, support editable items                            |
 | `src/components/repo-item.tsx`   | **NEW or modify** - Support editable state                        |

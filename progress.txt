@@ -19,4 +19,10 @@ Next: Begin working on first task.
     (header: bg[1], list: bg[2], footer: bg[3])
   - Updated `src/components/add-repo.tsx`: Removed borders, kept bg[2] for modal state
   - Updated `src/components/status-bar.tsx`: Removed borders
+---
+
+- Completed Task 3: Created custom Logger service with logStore
+  - Created `src/services/logger.ts`: LogEntry interface, logger object with methods
+    (log, info, success, error, command), and logStore for UI access
+  - Updated `src/services/git.ts`: Integrated logger into clone and pull operations
   - Type check, lint, and tests passed
