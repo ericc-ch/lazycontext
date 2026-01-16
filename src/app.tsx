@@ -1,5 +1,5 @@
 import { createSignal, onMount, Show } from "solid-js"
-import { useKeyboard } from "@opentui/solid"
+import { useKeyboard, useTerminalDimensions } from "@opentui/solid"
 import { RGBA } from "@opentui/core"
 import { ConfigService, type Repo } from "./services/config"
 import { GitService } from "./services/git"
@@ -22,6 +22,7 @@ interface AppState {
 
 export function App() {
   const theme = useTheme()
+  const dimensions = useTerminalDimensions()
   const [state, setState] = createSignal<AppState>({
     repos: [],
     statuses: new Map(),
@@ -252,6 +253,11 @@ export function App() {
 
   return (
     <ThemeProvider>
+      <box position="absolute" top={0}>
+        <text>
+          {dimensions().width}x{dimensions().height}
+        </text>
+      </box>
       <box
         flexDirection="column"
         width="100%"

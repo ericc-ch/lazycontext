@@ -17,7 +17,7 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/main.tsx",
+    "start": "bun src/main.tsx",
     "format": "prettier --write .",
     "lint": "oxlint --type-aware",
     "typecheck": "tsgo"
@@ -25,18 +25,18 @@
   "dependencies": {
     "@effect/platform": "^0.94.1",
     "@effect/platform-bun": "^0.87.0",
-    "@opentui/core": "^0.1.72",
-    "@opentui/solid": "^0.1.72",
+    "@opentui/core": "^0.1.73",
+    "@opentui/solid": "^0.1.73",
     "arkregex": "^0.0.5",
     "effect": "^3.19.14",
     "solid-js": "1.9.9"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.6",
-    "@typescript/native-preview": "^7.0.0-dev.20260114.1",
-    "oxlint-tsgolint": "^0.11.0",
     "@effect/language-service": "^0.65.0",
+    "@types/bun": "^1.3.6",
+    "@typescript/native-preview": "^7.0.0-dev.20260115.1",
     "oxlint": "^1.39.0",
+    "oxlint-tsgolint": "^0.11.1",
     "prettier": "^3.8.0",
     "typescript": "^5.9.3"
   }
