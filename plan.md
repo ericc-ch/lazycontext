@@ -23,13 +23,13 @@ Redesign the app with:
 
 **Steps:**
 
-- [ ] 1.1. Modify `src/components/repo-list.tsx`: - Remove `border` and `borderColor` props from the main `<box>` container - Increase `backgroundColor` contrast between header, list, and footer areas - Add subtle background variations to differentiate sections: - Header: slightly lighter `bg[2]` - List area: base `bg[1]` - Footer: darker `bg[3]` - Keep padding consistent to maintain spacing
+- [x] 1.1. Modify `src/components/repo-list.tsx`: - Remove `border` and `borderColor` props from the main `<box>` container - Increase `backgroundColor` contrast between header, list, and footer areas - Add subtle background variations to differentiate sections: - Header: slightly lighter `bg[2]` - List area: base `bg[1]` - Footer: darker `bg[3]` - Keep padding consistent to maintain spacing
 
-- [ ] 1.2. Modify `src/components/add-repo.tsx`: - Remove `border` and `borderColor` props - Use different background color to indicate "modal/overlay" state - Add subtle shadow or indentation effect if possible via padding
+- [x] 1.2. Modify `src/components/add-repo.tsx`: - Remove `border` and `borderColor` props - Use different background color to indicate "modal/overlay" state - Add subtle shadow or indentation effect if possible via padding
 
-- [ ] 1.3. Modify `src/components/status-bar.tsx`: - Remove `border` and `borderStyle` props - Use background color to distinguish the log area - Keep padding for spacing
+- [x] 1.3. Modify `src/components/status-bar.tsx`: - Remove `border` and `borderStyle` props - Use background color to distinguish the log area - Keep padding for spacing
 
-- [ ] 1.4. Modify `src/app.tsx` layout: - Update the main container gap and padding for cleaner layout without borders - Adjust flexGrow/flexBasis ratios if needed for visual balance
+- [x] 1.4. Modify `src/app.tsx` layout: - Update the main container gap and padding for cleaner layout without borders - Adjust flexGrow/flexBasis ratios if needed for visual balance
 
 **Reference Files:**
 
@@ -179,9 +179,10 @@ export const Logger = Context.Tag("@app/Logger")
 
 ## Implementation Order
 
-1. **Phase 1: Foundation**
-   - [x] Task 6: Add `q` for exiting (simple, quick win)
-   - [ ] Task 1: Redesign UI to borderless (visual changes, affects all components)
+1.  **Phase 1: Foundation**
+
+- [x] Task 6: Add `q` for exiting (simple, quick win)
+- [x] Task 1: Redesign UI to borderless (visual changes, affects all components)
 
 2. **Phase 2: Logger & Command Log**
    - [ ] Task 3: Create custom Effect Logger (core infrastructure)

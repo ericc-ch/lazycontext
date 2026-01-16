@@ -26,13 +26,11 @@ export function AddRepo(props: AddRepoProps) {
   return (
     <box
       flexDirection="column"
-      border
-      borderColor={theme()?.fg[3] ?? RGBA.fromHex("#334455")}
-      borderStyle="single"
       paddingLeft={1}
       paddingRight={1}
       paddingTop={1}
       paddingBottom={1}
+      backgroundColor={theme()?.bg[2] ?? RGBA.fromHex("#1a1b26")}
     >
       <box flexDirection="row" alignItems="center" gap={1}>
         <text

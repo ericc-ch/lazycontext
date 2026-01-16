@@ -35,9 +35,6 @@ export function StatusBar(props: StatusBarProps) {
       justifyContent="space-between"
       alignItems="flex-start"
       gap={layout() === "vertical" ? 1 : 0}
-      border
-      borderColor={theme()?.fg[3] ?? RGBA.fromHex("#334455")}
-      borderStyle="single"
     >
       <box flexDirection="row" alignItems="center" gap={1}>
         <text

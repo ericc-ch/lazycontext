@@ -12,3 +12,11 @@ Next: Begin working on first task.
   - Type check and lint passed
 
 ---
+
+---
+- Completed Task 1: Redesigned UI to borderless with background colors
+  - Updated `src/components/repo-list.tsx`: Removed borders, added background hierarchy
+    (header: bg[1], list: bg[2], footer: bg[3])
+  - Updated `src/components/add-repo.tsx`: Removed borders, kept bg[2] for modal state
+  - Updated `src/components/status-bar.tsx`: Removed borders
+  - Type check, lint, and tests passed
