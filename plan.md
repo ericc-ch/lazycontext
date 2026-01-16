@@ -22,10 +22,10 @@ Refactor the current keybinding system to follow the centralized architecture de
 
 ### 1. Create keybinds.ts with keybinding definitions
 
-- [ ] Create `src/lib/keybinds.ts`
-- [ ] Export `keybinds` object with action-to-keys mapping
-- [ ] Define actions: `navigate_down`, `navigate_up`, `add_repo`, `sync_repo`, `sync_all`, `cancel`
-- [ ] Map actions to keys: `["j", "down"]`, `["k", "up"]`, `"a"`, `"enter"`, `"s"`, `"escape"`
+- [x] Create `src/lib/keybinds.ts`
+- [x] Export `keybinds` object with action-to-keys mapping
+- [x] Define actions: `navigate_down`, `navigate_up`, `add_repo`, `sync_repo`, `sync_all`, `cancel`
+- [x] Map actions to keys: `["j", "down"]`, `["k", "up"]`, `"a"`, `"enter"`, `"s"`, `"escape"`
 
 ### 2. Create KeybindProvider service
 

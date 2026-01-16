@@ -6,3 +6,10 @@ Project initialized with Ralph workflow.
 Next: Begin working on first task.
 
 ---
+2026-01-16:
+- Completed Task 1: Created `src/lib/keybinds.ts` with keybinding definitions
+  - Exported `keybinds` object with action-to-keys mapping
+  - Defined actions: navigate_down, navigate_up, add_repo, sync_repo, sync_all, cancel
+  - Mapped actions to keys: ["j", "down"], ["k", "up"], "a", "enter", "s", "escape"
+
+---
