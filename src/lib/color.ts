@@ -41,8 +41,10 @@ function luminance(r: number, g: number, b: number): number {
   return LUMA_RED * r + LUMA_GREEN * g + LUMA_BLUE * b
 }
 
-function generateColorScale(baseColor: RGBA, bg: RGBA) {
-  const scale: ColorScale = [] as unknown as ColorScale
+function generateColorScale(baseColor: RGBA, bg: RGBA): ColorScale {
+  const scale = Array.from({ length: 12 }, () =>
+    RGBA.fromInts(0, 0, 0),
+  ) as ColorScale
   const bgLum = luminance(bg.r, bg.g, bg.b)
   const isDark = bgLum < 0.5
   const r = baseColor.r * 255

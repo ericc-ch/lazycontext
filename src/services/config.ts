@@ -11,7 +11,7 @@ export class ConfigSchema extends Schema.Class<ConfigSchema>("ConfigSchema")({
   repos: Schema.Array(RepoSchema),
 }) {}
 
-class ConfigError extends Data.TaggedError("ConfigError")<{
+export class ConfigError extends Data.TaggedError("ConfigError")<{
   message: string
 }> {}
 
@@ -49,7 +49,7 @@ export class Config extends Effect.Service<Config>()("Config", {
       }),
 
       addRepo: Effect.fn(function* (url: string) {
-        const { repo } = parseGithubUrl(url)
+        const { repo } = yield* parseGithubUrl(url)
         const config = yield* readConfigFile
 
         const existingUrls = new Set(config.repos.map((r) => r.url))

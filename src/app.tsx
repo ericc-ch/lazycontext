@@ -1,7 +1,7 @@
 import { RGBA, type KeyEvent } from "@opentui/core"
 import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/solid"
 import { createSignal, onMount, Show } from "solid-js"
-import { ThemeProvider, useTheme } from "./components/provider-theme"
+import { useTheme } from "./components/provider-theme"
 import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
@@ -45,14 +45,11 @@ export function App() {
         repos: [...config.repos],
       }))
       await checkAllStatuses()
-    } catch (error) {
-      logStore.addLog({
-        id: crypto.randomUUID(),
-        timestamp: new Date(),
-        type: "error",
-        message: "Failed to load config",
-        details: error instanceof Error ? error.message : "Unknown error",
-      })
+    } catch (error: unknown) {
+      console.error(
+        "Failed to load config",
+        error instanceof Error ? error.message : "Unknown error",
+      )
     }
   }
 
@@ -67,7 +64,11 @@ export function App() {
           Git.checkStatus(repo, targetDir),
         )
         statuses.set(repo.name, status)
-      } catch {
+      } catch (error: unknown) {
+        console.error(
+          `Failed to check status for ${repo.name}`,
+          error instanceof Error ? error.message : "Unknown error",
+        )
         statuses.set(repo.name, "missing")
       }
     }
@@ -106,14 +107,11 @@ export function App() {
           }
         })
       }
-    } catch (error) {
-      logStore.addLog({
-        id: crypto.randomUUID(),
-        timestamp: new Date(),
-        type: "error",
-        message: "Failed to add repository",
-        details: error instanceof Error ? error.message : "Unknown error",
-      })
+    } catch (error: unknown) {
+      console.error(
+        "Failed to add repository",
+        error instanceof Error ? error.message : "Unknown error",
+      )
     }
   }
 
@@ -141,14 +139,11 @@ export function App() {
         ...prev,
         statuses,
       }))
-    } catch (error) {
-      logStore.addLog({
-        id: crypto.randomUUID(),
-        timestamp: new Date(),
-        type: "error",
-        message: `Failed to sync ${repo.name}`,
-        details: error instanceof Error ? error.message : "Unknown error",
-      })
+    } catch (error: unknown) {
+      console.error(
+        `Failed to sync ${repo.name}`,
+        error instanceof Error ? error.message : "Unknown error",
+      )
     }
   }
 
@@ -178,7 +173,11 @@ export function App() {
           )
           statuses.set(repo.name, newStatus)
           syncedCount++
-        } catch {
+        } catch (error: unknown) {
+          console.error(
+            `Failed to sync ${repo.name}`,
+            error instanceof Error ? error.message : "Unknown error",
+          )
           statuses.set(repo.name, "missing")
           failedCount++
         }
@@ -190,24 +189,15 @@ export function App() {
       }))
 
       if (syncedCount > 0 || failedCount > 0) {
-        logStore.addLog({
-          id: crypto.randomUUID(),
-          timestamp: new Date(),
-          type: failedCount === 0 ? "success" : "error",
-          message:
-            failedCount === 0 ?
-              `All ${syncedCount} repositories synced successfully`
-            : `Synced ${syncedCount}, ${failedCount} failed`,
-        })
+        console.log(
+          `Sync complete: ${syncedCount} synced, ${failedCount} failed`,
+        )
       }
-    } catch (error) {
-      logStore.addLog({
-        id: crypto.randomUUID(),
-        timestamp: new Date(),
-        type: "error",
-        message: "Failed to sync repositories",
-        details: error instanceof Error ? error.message : "Unknown error",
-      })
+    } catch (error: unknown) {
+      console.error(
+        "Failed to sync repositories",
+        error instanceof Error ? error.message : "Unknown error",
+      )
     }
   }
 
@@ -273,7 +263,7 @@ export function App() {
   const isWide = () => dimensions().width >= 100
 
   return (
-    <ThemeProvider>
+    <>
       <box
         flexDirection={isWide() ? "row" : "column"}
         width="100%"
@@ -320,12 +310,12 @@ export function App() {
           </Show>
         </box>
         <Show when={isWide()}>
-          <CommandLog logs={logStore.getLogs()} />
+          <CommandLog logs={[]} />
         </Show>
       </box>
       <Show when={!isWide()}>
         <StatusBar layout="horizontal" />
       </Show>
-    </ThemeProvider>
+    </>
   )
 }

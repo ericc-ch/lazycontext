@@ -1,7 +1,14 @@
 import { For } from "solid-js"
 import { TextAttributes, RGBA } from "@opentui/core"
 import { useTheme } from "./provider-theme"
-import type { LogEntry } from "../services/logger"
+
+export interface LogEntry {
+  id: string
+  timestamp: Date
+  type: "success" | "error" | "command" | "default"
+  message: string
+  details?: string
+}
 
 export interface CommandLogProps {
   logs: LogEntry[]

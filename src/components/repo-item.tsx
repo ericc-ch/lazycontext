@@ -9,6 +9,7 @@ import { usePaste } from "@opentui/solid"
 import type { RepoSchema } from "../services/config"
 import { useTheme } from "./provider-theme"
 import { parseGithubUrl } from "../lib/url"
+import { Effect } from "effect"
 
 export interface RepoItemProps {
   repo: RepoSchema
@@ -62,34 +63,26 @@ export function RepoItem(props: RepoItemProps) {
     if (!props.editing) return
     const pastedText = event.text
     setEditUrl(pastedText)
-    try {
-      parseGithubUrl(pastedText)
-      setParseError(null)
-    } catch {
-      setParseError("Invalid GitHub URL")
-    }
+    Effect.runPromise(parseGithubUrl(pastedText))
+      .then(() => setParseError(null))
+      .catch(() => setParseError("Invalid GitHub URL"))
   }
 
   const handleInput = (value: string) => {
     setEditUrl(value)
     setParseError(null)
     if (value) {
-      try {
-        parseGithubUrl(value)
-      } catch {
-        setParseError("Invalid GitHub URL")
-      }
+      Effect.runPromise(parseGithubUrl(value)).catch(() =>
+        setParseError("Invalid GitHub URL"),
+      )
     }
   }
 
   const handleSubmit = () => {
     if (props.editing && editUrl().trim()) {
-      try {
-        parseGithubUrl(editUrl())
-        props.onSave?.(editUrl())
-      } catch {
-        setParseError("Invalid GitHub URL")
-      }
+      Effect.runPromise(parseGithubUrl(editUrl()))
+        .then(() => props.onSave?.(editUrl()))
+        .catch(() => setParseError("Invalid GitHub URL"))
     }
   }
 
@@ -106,11 +99,9 @@ export function RepoItem(props: RepoItemProps) {
     if (props.editing) {
       setEditUrl(props.repo.url ?? "")
       if (props.repo.url) {
-        try {
-          parseGithubUrl(props.repo.url)
-        } catch {
-          setParseError("Invalid GitHub URL")
-        }
+        Effect.runPromise(parseGithubUrl(props.repo.url)).catch(() =>
+          setParseError("Invalid GitHub URL"),
+        )
       }
     }
   })

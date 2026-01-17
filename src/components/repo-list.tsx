@@ -1,126 +1,8 @@
 import { For, Show } from "solid-js"
-import { TextAttributes, type MouseEvent, RGBA } from "@opentui/core"
+import { TextAttributes, RGBA } from "@opentui/core"
 import { RepoSchema } from "../services/config"
 import { useTheme } from "./provider-theme"
 import { RepoItem } from "./repo-item"
-
-export interface RepoItemProps {
-  repo: RepoSchema
-  status: "synced" | "modified" | "missing"
-  lastUpdate?: string
-  selected?: boolean
-  editing?: boolean
-  onClick?: () => void
-  onSave?: (url: string) => void
-  onCancel?: () => void
-}
-
-export function RepoItemComponent(props: RepoItemProps) {
-  const theme = useTheme()
-
-  const statusColor = () => {
-    switch (props.status) {
-      case "synced":
-        return theme()?.success[6] ?? RGBA.fromHex("#22c55e")
-      case "modified":
-        return theme()?.warning[6] ?? RGBA.fromHex("#eab308")
-      case "missing":
-        return theme()?.error[6] ?? RGBA.fromHex("#ef4444")
-      default:
-        return theme()?.grays[5] ?? RGBA.fromHex("#888888")
-    }
-  }
-
-  const statusText = () => {
-    switch (props.status) {
-      case "synced":
-        return "synced"
-      case "modified":
-        return "modified"
-      case "missing":
-        return "missing"
-      default:
-        return "unknown"
-    }
-  }
-
-  const handleMouseDown = (_event: MouseEvent) => {
-    if (!props.editing) {
-      props.onClick?.()
-    }
-  }
-
-  return (
-    <box
-      paddingLeft={1}
-      paddingRight={1}
-      paddingTop={1}
-      paddingBottom={1}
-      backgroundColor={
-        props.selected ?
-          (theme()?.fg[3] ?? RGBA.fromHex("#334455"))
-        : (theme()?.bg[2] ?? RGBA.fromHex("#1a1b26"))
-      }
-      onMouseDown={handleMouseDown}
-    >
-      <Show
-        when={props.editing}
-        fallback={
-          <box
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <box flexDirection="row" alignItems="center" gap={2}>
-              <box width={2}>
-                <text
-                  fg={
-                    props.selected ?
-                      (theme()?.info[0] ?? RGBA.fromHex("#00AAFF"))
-                    : (theme()?.grays[5] ?? RGBA.fromHex("#888888"))
-                  }
-                >
-                  {props.selected ? ">" : " "}
-                </text>
-              </box>
-              <text
-                fg={theme()?.fg[0] ?? RGBA.fromHex("#FFFFFF")}
-                attributes={TextAttributes.BOLD}
-              >
-                {props.repo.name}
-              </text>
-            </box>
-            <box flexDirection="row" alignItems="center" gap={2}>
-              <text fg={statusColor()}>{statusText()}</text>
-              <Show when={props.lastUpdate}>
-                <text fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}>
-                  {props.lastUpdate}
-                </text>
-              </Show>
-            </box>
-          </box>
-        }
-      >
-        <box flexDirection="row" alignItems="center" gap={2}>
-          <box width={2}>
-            <text fg={theme()?.info[0] ?? RGBA.fromHex("#00AAFF")}>+</text>
-          </box>
-          <input
-            value={props.repo.url ?? ""}
-            onInput={(value) => props.onSave?.(value)}
-            placeholder="https://github.com/user/repo.git"
-            focused
-            style={{
-              flexGrow: 1,
-              backgroundColor: theme()?.bg[2] ?? RGBA.fromHex("#1a1b26"),
-              cursorColor: theme()?.info[0] ?? RGBA.fromHex("#00AAFF"),
-            }}
-          />
-        </box>
-      </Show>
-    </box>
-  )
-}
 
 export interface RepoListProps {
   repos: RepoSchema[]
@@ -139,10 +21,19 @@ export function RepoList(props: RepoListProps) {
   const theme = useTheme()
 
   const totalCount = () => props.repos.length
-  const syncedCount = () =>
-    Array.from(props.statuses.values()).filter((s) => s === "synced").length
-  const missingCount = () =>
-    Array.from(props.statuses.values()).filter((s) => s === "missing").length
+  const statusCounts = () => {
+    const values = Array.from(props.statuses.values())
+    let synced = 0
+    let missing = 0
+    for (const s of values) {
+      if (s === "synced") synced++
+      else if (s === "missing") missing++
+    }
+    return { synced, missing }
+  }
+
+  const syncedCount = () => statusCounts().synced
+  const missingCount = () => statusCounts().missing
 
   const editingRepo = () =>
     props.editingIndex !== null ?

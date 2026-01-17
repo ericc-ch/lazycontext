@@ -1,18 +1,25 @@
+import { Data, Effect } from "effect"
 import { regex } from "arkregex"
+
+export class UrlError extends Data.TaggedError("UrlError")<{
+  message: string
+}> {}
 
 const githubUrlRegex = regex(
   "(?:https://|git@)github\\.com[/:](?<owner>[^/]+)/(?<repo>[^/]+?)(?:\\.git)?$",
 )
 
-export function parseGithubUrl(url: string): { owner: string; repo: string } {
+export function parseGithubUrl(
+  url: string,
+): Effect.Effect<{ owner: string; repo: string }, UrlError> {
   const match = url.match(githubUrlRegex)
   if (!match || !match.groups) {
-    throw new Error(`Invalid GitHub URL: ${url}`)
+    return Effect.fail(new UrlError({ message: `Invalid GitHub URL: ${url}` }))
   }
   const owner = match.groups.owner
   const repo = match.groups.repo
   if (owner === undefined || repo === undefined) {
-    throw new Error(`Invalid GitHub URL: ${url}`)
+    return Effect.fail(new UrlError({ message: `Invalid GitHub URL: ${url}` }))
   }
-  return { owner, repo }
+  return Effect.succeed({ owner, repo })
 }
