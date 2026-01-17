@@ -41,13 +41,14 @@ Next: Begin working on first task.
 
 2026-01-18:
 - Tasks completed:
-  - Task 3 (subtask): Migrate add-repo.tsx - Replaced useState with local atoms
+  - Task 3 (subtask): Migrate repo-item.tsx - Replaced useState with local atoms
 - Decisions made:
-  - Created local atoms (AddRepoUrlAtom, AddRepoStatusAtom, AddRepoErrorAtom) for component-local state
+  - Created local atoms (RepoItemEditUrlAtom, RepoItemParseErrorAtom) for component-local state
   - Used useAtom hook from @effect-atom/atom-react for state management
-  - Added URL validation using Effect.runPromiseExit with parseGithubUrl
-  - Kept local state since AddRepo form state is not shared with other components
+  - Followed same pattern as add-repo.tsx for consistency
+  - Kept useEffect for paste event handler registration (not related to state)
 - Blockers encountered:
   - None
 - Files changed:
-  - src/components/add-repo.tsx
+  - src/components/repo-item.tsx
+  - plan.md (checked off Task 3 subtask)

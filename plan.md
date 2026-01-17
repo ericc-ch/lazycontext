@@ -58,7 +58,7 @@ Refactor simple components to use atoms.
 #### Subtasks
 
 - [x] Refactor `src/components/add-repo.tsx`.
-- [ ] Refactor `src/components/repo-item.tsx`.
+- [x] Refactor `src/components/repo-item.tsx`.
 
 #### Implementation Guide
 

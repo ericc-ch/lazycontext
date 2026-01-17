@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import {
   TextAttributes,
   RGBA,
@@ -6,6 +6,8 @@ import {
   type MouseEvent,
 } from "@opentui/core"
 import { useAppContext } from "@opentui/react"
+import { make } from "@effect-atom/atom/Atom"
+import { useAtom } from "@effect-atom/atom-react"
 import type { RepoSchema } from "../services/config"
 import { theme } from "../lib/theme"
 import { parseGithubUrl } from "../lib/url"
@@ -14,6 +16,9 @@ import { Effect } from "effect"
 interface PasteEvent {
   text: string
 }
+
+const RepoItemEditUrlAtom = make<string>("")
+const RepoItemParseErrorAtom = make<string | null>(null)
 
 const usePaste = (handler: (event: PasteEvent) => void) => {
   const { keyHandler } = useAppContext()
@@ -39,8 +44,8 @@ export interface RepoItemProps {
 }
 
 export function RepoItem(props: RepoItemProps) {
-  const [editUrl, setEditUrl] = useState("")
-  const [parseError, setParseError] = useState<string | null>(null)
+  const [editUrl, setEditUrl] = useAtom(RepoItemEditUrlAtom)
+  const [parseError, setParseError] = useAtom(RepoItemParseErrorAtom)
 
   const statusColor = () => {
     switch (props.status) {
