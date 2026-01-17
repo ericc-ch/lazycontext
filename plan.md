@@ -29,9 +29,9 @@ Create a centralized state definition using Atoms.
 
 #### Subtasks
 
-- [ ] Create `src/state/atoms.ts` (or `src/state/` folder structure).
-- [ ] Define atoms for Domain State (Repos, Statuses).
-- [ ] Define atoms for UI State (Views, Selections, Edit forms).
+- [x] Create `src/state/atoms.ts` (or `src/state/` folder structure).
+- [x] Define atoms for Domain State (Repos, Statuses).
+- [x] Define atoms for UI State (Views, Selections, Edit forms).
 
 #### Implementation Guide
 
@@ -72,15 +72,15 @@ Refactor simple components to use atoms.
 
 - Components should no longer use `useState` for logic that affects the broader app or data persistence.
 
-### [ ] Task 4: Migrate App Component
+### [x] Task 4: Migrate App Component
 
 Refactor the main App component to remove centralized state management.
 
 #### Subtasks
 
-- [ ] Remove `useState<AppState>` from `src/app.tsx`.
-- [ ] Replace prop drilling with direct Atom usage in children where appropriate, or use Atoms in `App` and pass data.
-- [ ] Move async logic (loading config, checking statuses) to `Atom.make` with effects or `useAtomMount`/`Atom.fn`.
+- [x] Remove `useState<AppState>` from `src/app.tsx`.
+- [x] Replace prop drilling with direct Atom usage in children where appropriate, or use Atoms in `App` and pass data.
+- [x] Move async logic (loading config, checking statuses) to `Atom.make` with effects or `useAtomMount`/`Atom.fn`.
 
 #### Implementation Guide
 

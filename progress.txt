@@ -24,6 +24,23 @@ Next: Begin working on first task.
 
 2026-01-18:
 - Tasks completed:
+  - Task 4: Migrate App Component - Replaced useState/useEffect with effect-atom hooks
+  - Task 2: Define Atom State - Checked off subtasks (atoms.ts was already created)
+- Decisions made:
+  - Used useAtom hook from @effect-atom/atom-react for all atom interactions
+  - Kept async logic inline in App component (following add-repo.tsx pattern)
+  - All state updates use atom setters with functional updates for Map states
+- Blockers encountered:
+  - Initial misunderstanding of effect-atom API - atoms don't have .get()/.set() methods directly
+  - Resolved by using useAtom hook which returns [value, setValue] tuples
+- Files changed:
+  - src/app.tsx (refactored from useState to useAtom)
+  - plan.md (checked off Task 2 subtasks and Task 4)
+
+---
+
+2026-01-18:
+- Tasks completed:
   - Task 3 (subtask): Migrate add-repo.tsx - Replaced useState with local atoms
 - Decisions made:
   - Created local atoms (AddRepoUrlAtom, AddRepoStatusAtom, AddRepoErrorAtom) for component-local state

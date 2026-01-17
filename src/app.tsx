@@ -1,48 +1,42 @@
 import { RGBA, type KeyEvent } from "@opentui/core"
 import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/react"
-import { useState, useEffect } from "react"
+import { useAtom } from "@effect-atom/atom-react"
+import { useEffect } from "react"
 import { theme } from "./lib/theme"
 import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
 import { match } from "./lib/keybinds"
 import { runtime } from "./runtime"
-import { Config, RepoSchema } from "./services/config"
+import { Config } from "./services/config"
 import { Git } from "./services/git"
+import {
+  reposAtom,
+  statusesAtom,
+  viewAtom,
+  selectedIndexAtom,
+  editingIndexAtom,
+  editingUrlAtom,
+  type Status,
+} from "./state/atoms"
 
-type View = "list" | "add"
-
-interface AppState {
-  repos: RepoSchema[]
-  statuses: Map<string, "synced" | "modified" | "missing">
-  selectedIndex: number
-  view: View
-  editingIndex: number | null
-  editingUrl: string
-}
+const targetDir = ".context"
 
 export function App() {
   const renderer = useRenderer()
   const dimensions = useTerminalDimensions()
 
-  const [state, setState] = useState<AppState>({
-    repos: [],
-    statuses: new Map(),
-    selectedIndex: 0,
-    view: "list",
-    editingIndex: null,
-    editingUrl: "",
-  })
-
-  const targetDir = ".context"
+  const [repos, setRepos] = useAtom(reposAtom)
+  const [statuses, setStatuses] = useAtom(statusesAtom)
+  const [view, setView] = useAtom(viewAtom)
+  const [selectedIndex, setSelectedIndex] = useAtom(selectedIndexAtom)
+  const [editingIndex, setEditingIndex] = useAtom(editingIndexAtom)
+  const [editingUrl, setEditingUrl] = useAtom(editingUrlAtom)
 
   const loadConfig = async () => {
     try {
       const config = await runtime.runPromise(Config.load())
-      setState((prev) => ({
-        ...prev,
-        repos: [...config.repos],
-      }))
+      setRepos([...config.repos])
       await checkAllStatuses()
     } catch (error: unknown) {
       console.error(
@@ -53,41 +47,35 @@ export function App() {
   }
 
   const checkAllStatuses = async () => {
-    const currentState = state
-    const statuses = new Map<string, "synced" | "modified" | "missing">()
+    const currentRepos = repos
+    const statusesMap = new Map<string, Status>()
 
-    for (const repo of currentState.repos) {
+    for (const repo of currentRepos) {
       if (!repo.name) continue
       try {
         const status = await runtime.runPromise(
           Git.checkStatus(repo, targetDir),
         )
-        statuses.set(repo.name, status)
+        statusesMap.set(repo.name, status)
       } catch (error: unknown) {
         console.error(
           `Failed to check status for ${repo.name}`,
           error instanceof Error ? error.message : "Unknown error",
         )
-        statuses.set(repo.name, "missing")
+        statusesMap.set(repo.name, "missing")
       }
     }
 
-    setState((prev) => ({ ...prev, statuses }))
+    setStatuses(statusesMap)
   }
 
   const handleAddRepo = async (url: string) => {
-    setState((prev) => ({
-      ...prev,
-      view: "list",
-    }))
+    setView("list")
 
     try {
       const config = await runtime.runPromise(Config.addRepo(url))
 
-      setState((prev) => ({
-        ...prev,
-        repos: [...config.repos],
-      }))
+      setRepos([...config.repos])
 
       const newRepo = config.repos.find((r) => r.url === url)
       if (newRepo && newRepo.name) {
@@ -97,13 +85,10 @@ export function App() {
           Git.checkStatus(newRepo, targetDir),
         )
 
-        setState((prev) => {
-          const newStatuses = new Map(prev.statuses)
+        setStatuses((prev) => {
+          const newStatuses = new Map(prev)
           newStatuses.set(newRepo.name!, status)
-          return {
-            ...prev,
-            statuses: newStatuses,
-          }
+          return newStatuses
         })
       }
     } catch (error: unknown) {
@@ -115,13 +100,12 @@ export function App() {
   }
 
   const handleSyncRepo = async () => {
-    const currentState = state
-    const repo = currentState.repos[currentState.selectedIndex]
+    const repo = repos[selectedIndex]
     if (!repo || !repo.name) return
 
     try {
-      const statuses = new Map(state.statuses)
-      const currentStatus = statuses.get(repo.name)
+      const statusesMap = new Map(statuses)
+      const currentStatus = statusesMap.get(repo.name)
 
       if (currentStatus === "missing") {
         await runtime.runPromise(Git.clone(repo, targetDir))
@@ -133,11 +117,8 @@ export function App() {
         Git.checkStatus(repo, targetDir),
       )
 
-      statuses.set(repo.name, newStatus)
-      setState((prev) => ({
-        ...prev,
-        statuses,
-      }))
+      statusesMap.set(repo.name, newStatus)
+      setStatuses(statusesMap)
     } catch (error: unknown) {
       console.error(
         `Failed to sync ${repo.name}`,
@@ -147,19 +128,18 @@ export function App() {
   }
 
   const handleSyncAll = async () => {
-    const currentState = state
-    if (currentState.repos.length === 0) return
+    if (repos.length === 0) return
 
     try {
-      const statuses = new Map(state.statuses)
+      const statusesMap = new Map(statuses)
       let syncedCount = 0
       let failedCount = 0
 
-      for (const repo of currentState.repos) {
+      for (const repo of repos) {
         if (!repo.name) continue
 
         try {
-          const currentStatus = statuses.get(repo.name)
+          const currentStatus = statusesMap.get(repo.name)
 
           if (currentStatus === "missing") {
             await runtime.runPromise(Git.clone(repo, targetDir))
@@ -170,22 +150,19 @@ export function App() {
           const newStatus = await runtime.runPromise(
             Git.checkStatus(repo, targetDir),
           )
-          statuses.set(repo.name, newStatus)
+          statusesMap.set(repo.name, newStatus)
           syncedCount++
         } catch (error: unknown) {
           console.error(
             `Failed to sync ${repo.name}`,
             error instanceof Error ? error.message : "Unknown error",
           )
-          statuses.set(repo.name, "missing")
+          statusesMap.set(repo.name, "missing")
           failedCount++
         }
       }
 
-      setState((prev) => ({
-        ...prev,
-        statuses,
-      }))
+      setStatuses(statusesMap)
 
       if (syncedCount > 0 || failedCount > 0) {
         console.log(
@@ -201,50 +178,42 @@ export function App() {
   }
 
   const handleSelect = (index: number) => {
-    setState((prev) => ({ ...prev, selectedIndex: index }))
+    setSelectedIndex(index)
   }
 
   const handleKeyboard = (event: KeyEvent) => {
-    const currentState = state
-
     if (match(event, "toggle-console")) {
       renderer.console.toggle()
       return
     }
 
     if (match(event, "navigate-down")) {
-      setState((prev) => ({
-        ...prev,
-        selectedIndex: Math.min(prev.selectedIndex + 1, prev.repos.length - 1),
-      }))
+      setSelectedIndex((prev) => Math.min(prev + 1, repos.length - 1))
       return
     }
 
     if (match(event, "navigate-up")) {
-      setState((prev) => ({
-        ...prev,
-        selectedIndex: Math.max(prev.selectedIndex - 1, 0),
-      }))
+      setSelectedIndex((prev) => Math.max(prev - 1, 0))
       return
     }
 
     if (match(event, "repo-add")) {
-      setState((prev) => ({ ...prev, view: "add" }))
+      setView("add")
       return
     }
 
-    if (match(event, "repo-sync") && currentState.view === "list") {
+    if (match(event, "repo-sync") && view === "list") {
       void handleSyncRepo()
       return
     }
 
-    if (match(event, "repo-sync-all") && currentState.view === "list") {
+    if (match(event, "repo-sync-all") && view === "list") {
       void handleSyncAll()
       return
     }
 
-    if (match(event, "cancel") && currentState.view === "add") {
-      setState((prev) => ({ ...prev, view: "list" }))
+    if (match(event, "cancel") && view === "add") {
+      setView("list")
       return
     }
 
@@ -281,30 +250,24 @@ export function App() {
           flexShrink={isWide() ? 1 : 1}
           flexBasis={0}
         >
-          {state.view === "list" && (
+          {view === "list" && (
             <RepoList
-              repos={state.repos}
-              statuses={state.statuses}
-              selectedIndex={state.selectedIndex}
-              editingIndex={state.editingIndex}
-              editingUrl={state.editingUrl}
+              repos={repos}
+              statuses={statuses}
+              selectedIndex={selectedIndex}
+              editingIndex={editingIndex}
+              editingUrl={editingUrl}
               onSelect={handleSelect}
               onEnter={handleSyncRepo}
               onStartAdd={() => {
-                setState((prev) => ({
-                  ...prev,
-                  editingIndex: prev.repos.length,
-                  editingUrl: "",
-                  view: "list",
-                }))
+                setEditingIndex(repos.length)
+                setEditingUrl("")
+                setView("list")
               }}
               onSaveEdit={(url: string) => handleAddRepo(url)}
               onCancelEdit={() => {
-                setState((prev) => ({
-                  ...prev,
-                  editingIndex: null,
-                  editingUrl: "",
-                }))
+                setEditingIndex(null)
+                setEditingUrl("")
               }}
             />
           )}
