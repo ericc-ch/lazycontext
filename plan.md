@@ -28,6 +28,6 @@ These are orphaned logger calls (missing `yield*` prefix) that are likely dead c
 
 #### Subtasks
 
-- [ ] Remove `logger.command` and `logger.success` calls from `src/services/git.ts` (lines 17, 38, 42, 63)
-- [ ] Verify no logging statements remain in `src/` directory
-- [ ] Run tests to ensure removal doesn't break functionality
+- [x] Remove `logger.command` and `logger.success` calls from `src/services/git.ts` (lines 17, 38, 42, 63)
+- [x] Verify no logging statements remain in `src/` directory
+- [x] Run tests to ensure removal doesn't break functionality

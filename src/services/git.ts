@@ -14,13 +14,6 @@ export class Git extends Effect.Service<Git>()("Git", {
 
     return {
       clone: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
-        logger.command("git", [
-          "clone",
-          "--quiet",
-          repo.url,
-          `${targetDir}/${repo.name}`,
-        ])
-
         const command = Command.make(
           "git",
           "clone",
@@ -35,17 +28,9 @@ export class Git extends Effect.Service<Git>()("Git", {
             exitCode: result,
           })
         }
-        logger.success(`Cloned ${repo.url}`)
       }),
 
       pull: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
-        logger.command("git", [
-          "-C",
-          `${targetDir}/${repo.name}`,
-          "pull",
-          "--quiet",
-        ])
-
         const command = Command.make(
           "git",
           "-C",
@@ -60,7 +45,6 @@ export class Git extends Effect.Service<Git>()("Git", {
             exitCode: result,
           })
         }
-        logger.success(`Pulled ${repo.name}`)
       }),
 
       checkStatus: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
