@@ -49,3 +49,35 @@ Next: Begin working on first task.
 
 ### Files changed
 - src/app.tsx: Complete migration from SolidJS to React patterns
+
+---
+
+## Session 3
+
+### Tasks completed
+- Task 4: Refactor UI Components (all 5 components migrated)
+  - status-bar.tsx: Replaced `<Show>` with React conditional rendering, useTerminalDimensions from @opentui/react (object, not function)
+  - command-log.tsx: Replaced `<For>` with Array.map(), replaced `<Show>` with conditional rendering
+  - add-repo.tsx: Replaced `createSignal` with `useState`, `<Show>` with conditional rendering
+  - repo-item.tsx: Replaced `createSignal` with `useState`, `onMount` with `useEffect`, `<Show>` with conditional rendering, created custom `usePaste` hook for React
+  - repo-list.tsx: Replaced `<For>` with Array.map(), replaced `<Show>` with conditional rendering
+
+### Decisions made and why
+- Created custom `usePaste` hook in repo-item.tsx following the pattern from @opentui/react hooks (useAppContext, useEffect for subscription management)
+- Converted SolidJS signals to React useState for local component state
+- Converted derived values (like syncedCount, totalCount) from getter functions to direct values where possible
+- Used Array.map() instead of `<For>` for list rendering in React
+- Used ternary operators and && expressions instead of `<Show>` for conditional rendering
+
+### Blockers encountered
+- Pre-existing @opentui/core version mismatch causing type errors (nested dependencies)
+  - KeyEvent, MouseEvent, and CliRenderer types have incompatible private properties
+  - These were already noted in previous progress as pre-existing issue
+  - Application runs successfully despite type errors
+
+### Files changed
+- src/components/status-bar.tsx: Complete migration from SolidJS to React
+- src/components/command-log.tsx: Complete migration from SolidJS to React
+- src/components/add-repo.tsx: Complete migration from SolidJS to React
+- src/components/repo-item.tsx: Complete migration from SolidJS to React (with custom usePaste hook)
+- src/components/repo-list.tsx: Complete migration from SolidJS to React

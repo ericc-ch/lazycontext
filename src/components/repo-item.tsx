@@ -1,15 +1,31 @@
-import { createSignal, onMount, Show } from "solid-js"
+import { useState, useEffect } from "react"
 import {
   TextAttributes,
   RGBA,
   type KeyEvent,
   type MouseEvent,
 } from "@opentui/core"
-import { usePaste } from "@opentui/solid"
+import { useAppContext } from "@opentui/react"
 import type { RepoSchema } from "../services/config"
 import { theme } from "../lib/theme"
 import { parseGithubUrl } from "../lib/url"
 import { Effect } from "effect"
+
+interface PasteEvent {
+  text: string
+}
+
+const usePaste = (handler: (event: PasteEvent) => void) => {
+  const { keyHandler } = useAppContext()
+
+  useEffect(() => {
+    if (!keyHandler) return
+    keyHandler.on("paste", handler)
+    return () => {
+      keyHandler.off("paste", handler)
+    }
+  }, [keyHandler, handler])
+}
 
 export interface RepoItemProps {
   repo: RepoSchema
@@ -23,8 +39,8 @@ export interface RepoItemProps {
 }
 
 export function RepoItem(props: RepoItemProps) {
-  const [editUrl, setEditUrl] = createSignal("")
-  const [parseError, setParseError] = createSignal<string | null>(null)
+  const [editUrl, setEditUrl] = useState("")
+  const [parseError, setParseError] = useState<string | null>(null)
 
   const statusColor = () => {
     switch (props.status) {
@@ -58,7 +74,7 @@ export function RepoItem(props: RepoItemProps) {
     }
   }
 
-  const handlePaste = (event: { text: string }) => {
+  const handlePaste = (event: PasteEvent) => {
     if (!props.editing) return
     const pastedText = event.text
     setEditUrl(pastedText)
@@ -78,9 +94,9 @@ export function RepoItem(props: RepoItemProps) {
   }
 
   const handleSubmit = () => {
-    if (props.editing && editUrl().trim()) {
-      Effect.runPromise(parseGithubUrl(editUrl()))
-        .then(() => props.onSave?.(editUrl()))
+    if (props.editing && editUrl.trim()) {
+      Effect.runPromise(parseGithubUrl(editUrl))
+        .then(() => props.onSave?.(editUrl))
         .catch(() => setParseError("Invalid GitHub URL"))
     }
   }
@@ -94,7 +110,7 @@ export function RepoItem(props: RepoItemProps) {
     }
   }
 
-  onMount(() => {
+  useEffect(() => {
     if (props.editing) {
       setEditUrl(props.repo.url ?? "")
       if (props.repo.url) {
@@ -103,7 +119,7 @@ export function RepoItem(props: RepoItemProps) {
         )
       }
     }
-  })
+  }, [props.editing, props.repo.url])
 
   usePaste(handlePaste)
 
@@ -120,51 +136,14 @@ export function RepoItem(props: RepoItemProps) {
       }
       onMouseDown={handleMouseDown}
     >
-      <Show
-        when={props.editing}
-        fallback={
-          <box
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <box flexDirection="row" alignItems="center" gap={2}>
-              <box width={2}>
-                <text
-                  fg={
-                    props.selected ?
-                      (theme.info[0] ?? RGBA.fromHex("#00AAFF"))
-                    : (theme.grays[5] ?? RGBA.fromHex("#888888"))
-                  }
-                >
-                  {props.selected ? ">" : " "}
-                </text>
-              </box>
-              <text
-                fg={theme.fg[0] ?? RGBA.fromHex("#FFFFFF")}
-                attributes={TextAttributes.BOLD}
-              >
-                {props.repo.name}
-              </text>
-            </box>
-            <box flexDirection="row" alignItems="center" gap={2}>
-              <text fg={statusColor()}>{statusText()}</text>
-              <Show when={props.lastUpdate}>
-                <text fg={theme.fg[5] ?? RGBA.fromHex("#666666")}>
-                  {props.lastUpdate}
-                </text>
-              </Show>
-            </box>
-          </box>
-        }
-      >
+      {props.editing ?
         <box flexDirection="row" alignItems="center" gap={2}>
           <box width={2}>
             <text fg={theme.info[0] ?? RGBA.fromHex("#00AAFF")}>"+"</text>
           </box>
           <box flexGrow={1}>
             <input
-              value={editUrl()}
+              value={editUrl}
               onInput={handleInput}
               onSubmit={handleSubmit}
               placeholder="https://github.com/user/repo.git"
@@ -177,13 +156,46 @@ export function RepoItem(props: RepoItemProps) {
               onKeyDown={handleKeyDown}
             />
           </box>
-          <Show when={parseError()}>
+          {parseError ?
             <text fg={theme.error[6] ?? RGBA.fromHex("#ef4444")}>
-              {parseError()}
+              {parseError}
             </text>
-          </Show>
+          : null}
         </box>
-      </Show>
+      : <box
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <box flexDirection="row" alignItems="center" gap={2}>
+            <box width={2}>
+              <text
+                fg={
+                  props.selected ?
+                    (theme.info[0] ?? RGBA.fromHex("#00AAFF"))
+                  : (theme.grays[5] ?? RGBA.fromHex("#888888"))
+                }
+              >
+                {props.selected ? ">" : " "}
+              </text>
+            </box>
+            <text
+              fg={theme.fg[0] ?? RGBA.fromHex("#FFFFFF")}
+              attributes={TextAttributes.BOLD}
+            >
+              {props.repo.name}
+            </text>
+          </box>
+          <box flexDirection="row" alignItems="center" gap={2}>
+            <text fg={statusColor()}>{statusText()}</text>
+            {props.lastUpdate ?
+              <text fg={theme.fg[5] ?? RGBA.fromHex("#666666")}>
+                {props.lastUpdate}
+              </text>
+            : null}
+          </box>
+        </box>
+      }
     </box>
   )
 }

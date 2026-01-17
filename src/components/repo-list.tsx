@@ -1,4 +1,3 @@
-import { For, Show } from "solid-js"
 import { TextAttributes, RGBA } from "@opentui/core"
 import { RepoSchema } from "../services/config"
 import { theme } from "../lib/theme"
@@ -18,7 +17,7 @@ export interface RepoListProps {
 }
 
 export function RepoList(props: RepoListProps) {
-  const totalCount = () => props.repos.length
+  const totalCount = props.repos.length
   const statusCounts = () => {
     const values = Array.from(props.statuses.values())
     let synced = 0
@@ -30,8 +29,9 @@ export function RepoList(props: RepoListProps) {
     return { synced, missing }
   }
 
-  const syncedCount = () => statusCounts().synced
-  const missingCount = () => statusCounts().missing
+  const counts = statusCounts()
+  const syncedCount = counts.synced
+  const missingCount = counts.missing
 
   const editingRepo = () =>
     props.editingIndex !== null ?
@@ -60,54 +60,50 @@ export function RepoList(props: RepoListProps) {
           Repositories
         </text>
         <text fg={theme.grays[5] ?? RGBA.fromHex("#888888")}>
-          {syncedCount()}/{totalCount()} synced
-          {missingCount() > 0 && (
+          {syncedCount}/{totalCount} synced
+          {missingCount > 0 && (
             <text fg={theme.error[6] ?? RGBA.fromHex("#ef4444")}>
               {" "}
-              ({missingCount()} missing)
+              ({missingCount} missing)
             </text>
           )}
         </text>
       </box>
 
       <box flexDirection="column" flexGrow={1}>
-        <Show
-          when={props.repos.length > 0 || props.editingIndex !== null}
-          fallback={
-            <box
-              flexGrow={1}
-              justifyContent="center"
-              alignItems="center"
-              paddingTop={2}
-              paddingBottom={2}
-            >
-              <text fg={theme.fg[5] ?? RGBA.fromHex("#666666")}>
-                No repositories
-              </text>
-            </box>
-          }
-        >
-          <For each={props.repos}>
-            {(repo, index) => (
+        {props.repos.length > 0 || props.editingIndex !== null ?
+          <>
+            {props.repos.map((repo, index) => (
               <RepoItem
                 repo={repo}
                 status={props.statuses.get(repo.name ?? "") ?? "missing"}
-                selected={index() === props.selectedIndex}
-                onClick={() => props.onSelect(index())}
+                selected={index === props.selectedIndex}
+                onClick={() => props.onSelect(index)}
               />
-            )}
-          </For>
-          <Show when={editingRepo() !== null}>
-            <RepoItem
-              repo={editingRepo()!}
-              status="missing"
-              selected={true}
-              editing={true}
-              onSave={props.onSaveEdit ?? (() => {})}
-              onCancel={props.onCancelEdit ?? (() => {})}
-            />
-          </Show>
-        </Show>
+            ))}
+            {editingRepo() !== null ?
+              <RepoItem
+                repo={editingRepo()!}
+                status="missing"
+                selected={true}
+                editing={true}
+                onSave={props.onSaveEdit ?? (() => {})}
+                onCancel={props.onCancelEdit ?? (() => {})}
+              />
+            : null}
+          </>
+        : <box
+            flexGrow={1}
+            justifyContent="center"
+            alignItems="center"
+            paddingTop={2}
+            paddingBottom={2}
+          >
+            <text fg={theme.fg[5] ?? RGBA.fromHex("#666666")}>
+              No repositories
+            </text>
+          </box>
+        }
       </box>
 
       <box

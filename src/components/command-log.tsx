@@ -1,4 +1,3 @@
-import { For } from "solid-js"
 import { TextAttributes, RGBA } from "@opentui/core"
 import { theme } from "../lib/theme"
 
@@ -77,18 +76,14 @@ export function CommandLog(props: CommandLogProps) {
       </box>
 
       <box flexDirection="column" flexGrow={1} flexShrink={1} gap={0}>
-        <For
-          each={props.logs}
-          fallback={
-            <text
-              fg={theme.fg[5] ?? RGBA.fromHex("#71717a")}
-              attributes={TextAttributes.DIM}
-            >
-              No logs yet
-            </text>
-          }
-        >
-          {(entry) => (
+        {props.logs.length === 0 ?
+          <text
+            fg={theme.fg[5] ?? RGBA.fromHex("#71717a")}
+            attributes={TextAttributes.DIM}
+          >
+            No logs yet
+          </text>
+        : props.logs.map((entry) => (
             <box flexDirection="column" paddingTop={0} paddingBottom={0}>
               <box flexDirection="row" alignItems="center" gap={1}>
                 <text
@@ -116,8 +111,8 @@ export function CommandLog(props: CommandLogProps) {
                 </box>
               )}
             </box>
-          )}
-        </For>
+          ))
+        }
       </box>
     </box>
   )

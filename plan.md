@@ -63,11 +63,11 @@ Migrate all components in `src/components/` to React.
 
 #### Subtasks
 
-- [ ] Refactor `src/components/repo-list.tsx`
-- [ ] Refactor `src/components/repo-item.tsx`
-- [ ] Refactor `src/components/status-bar.tsx`
-- [ ] Refactor `src/components/command-log.tsx`
-- [ ] Refactor `src/components/add-repo.tsx`
+- [x] Refactor `src/components/repo-list.tsx`
+- [x] Refactor `src/components/repo-item.tsx`
+- [x] Refactor `src/components/status-bar.tsx`
+- [x] Refactor `src/components/command-log.tsx`
+- [x] Refactor `src/components/add-repo.tsx`
 
 #### Implementation Guide
 

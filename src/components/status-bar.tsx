@@ -1,6 +1,5 @@
-import { Show } from "solid-js"
 import { TextAttributes, RGBA } from "@opentui/core"
-import { useTerminalDimensions } from "@opentui/solid"
+import { useTerminalDimensions } from "@opentui/react"
 import { theme } from "../lib/theme"
 
 export interface StatusBarProps {
@@ -10,8 +9,8 @@ export interface StatusBarProps {
 }
 
 export function StatusBar(props: StatusBarProps) {
-  const dimensions = useTerminalDimensions()
-  const layout = () => props.layout ?? "horizontal"
+  const { width, height } = useTerminalDimensions()
+  const layout = props.layout ?? "horizontal"
 
   const getColor = () => {
     switch (props.type) {
@@ -31,12 +30,12 @@ export function StatusBar(props: StatusBarProps) {
       paddingTop={1}
       paddingBottom={1}
       backgroundColor={theme.bg[2] ?? RGBA.fromHex("#1a1b26")}
-      flexDirection={layout() === "vertical" ? "column" : "row"}
+      flexDirection={layout === "vertical" ? "column" : "row"}
       justifyContent="space-between"
       alignItems="flex-start"
-      gap={layout() === "vertical" ? 1 : 0}
+      gap={layout === "vertical" ? 1 : 0}
     >
-      <Show when={props.message}>
+      {props.message ?
         <box flexDirection="row" alignItems="center" gap={1}>
           <text
             fg={theme.fg[5] ?? RGBA.fromHex("#666666")}
@@ -48,14 +47,14 @@ export function StatusBar(props: StatusBarProps) {
             {props.message || "Ready"}
           </text>
         </box>
-      </Show>
+      : null}
       <box flexDirection="row" alignItems="center" gap={1}>
         <text
           fg={theme.fg[5] ?? RGBA.fromHex("#666666")}
           attributes={TextAttributes.DIM}
         >
           lazycontext v0.1.0
-          {dimensions().width}x{dimensions().height}
+          {width}x{height}
         </text>
       </box>
     </box>
