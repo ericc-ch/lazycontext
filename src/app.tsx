@@ -1,6 +1,6 @@
 import { RGBA, type KeyEvent } from "@opentui/core"
-import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/solid"
-import { createSignal, onMount, Show } from "solid-js"
+import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/react"
+import { useState, useEffect } from "react"
 import { theme } from "./lib/theme"
 import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
@@ -25,7 +25,7 @@ export function App() {
   const renderer = useRenderer()
   const dimensions = useTerminalDimensions()
 
-  const [state, setState] = createSignal<AppState>({
+  const [state, setState] = useState<AppState>({
     repos: [],
     statuses: new Map(),
     selectedIndex: 0,
@@ -53,7 +53,7 @@ export function App() {
   }
 
   const checkAllStatuses = async () => {
-    const currentState = state()
+    const currentState = state
     const statuses = new Map<string, "synced" | "modified" | "missing">()
 
     for (const repo of currentState.repos) {
@@ -115,12 +115,12 @@ export function App() {
   }
 
   const handleSyncRepo = async () => {
-    const currentState = state()
+    const currentState = state
     const repo = currentState.repos[currentState.selectedIndex]
     if (!repo || !repo.name) return
 
     try {
-      const statuses = new Map(state().statuses)
+      const statuses = new Map(state.statuses)
       const currentStatus = statuses.get(repo.name)
 
       if (currentStatus === "missing") {
@@ -147,11 +147,11 @@ export function App() {
   }
 
   const handleSyncAll = async () => {
-    const currentState = state()
+    const currentState = state
     if (currentState.repos.length === 0) return
 
     try {
-      const statuses = new Map(state().statuses)
+      const statuses = new Map(state.statuses)
       let syncedCount = 0
       let failedCount = 0
 
@@ -205,7 +205,7 @@ export function App() {
   }
 
   const handleKeyboard = (event: KeyEvent) => {
-    const currentState = state()
+    const currentState = state
 
     if (match(event, "toggle-console")) {
       renderer.console.toggle()
@@ -253,13 +253,13 @@ export function App() {
     }
   }
 
-  onMount(() => {
+  useEffect(() => {
     void loadConfig()
     useKeyboard(handleKeyboard)
-  })
+  }, [])
 
   const bgColor = () => theme.bg[1] ?? RGBA.fromHex("#0f0f14")
-  const isWide = () => dimensions().width >= 100
+  const isWide = () => dimensions.width >= 100
 
   return (
     <>
@@ -280,13 +280,13 @@ export function App() {
           flexShrink={isWide() ? 1 : 1}
           flexBasis={0}
         >
-          <Show when={state().view === "list"}>
+          {state.view === "list" && (
             <RepoList
-              repos={state().repos}
-              statuses={state().statuses}
-              selectedIndex={state().selectedIndex}
-              editingIndex={state().editingIndex}
-              editingUrl={state().editingUrl}
+              repos={state.repos}
+              statuses={state.statuses}
+              selectedIndex={state.selectedIndex}
+              editingIndex={state.editingIndex}
+              editingUrl={state.editingUrl}
               onSelect={handleSelect}
               onEnter={handleSyncRepo}
               onStartAdd={() => {
@@ -306,15 +306,11 @@ export function App() {
                 }))
               }}
             />
-          </Show>
+          )}
         </box>
-        <Show when={isWide()}>
-          <CommandLog logs={[]} />
-        </Show>
+        {isWide() && <CommandLog logs={[]} />}
       </box>
-      <Show when={!isWide()}>
-        <StatusBar layout="horizontal" />
-      </Show>
+      {!isWide() && <StatusBar layout="horizontal" />}
     </>
   )
 }

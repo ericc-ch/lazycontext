@@ -42,7 +42,7 @@ Reference files:
 
 - `src/main.tsx` - entry point
 
-### [ ] Task 3: Refactor Core Application Component
+### [x] Task 3: Refactor Core Application Component
 
 Migrate `src/app.tsx` from SolidJS to React.
 
