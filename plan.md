@@ -51,7 +51,7 @@ Create a centralized state definition using Atoms.
   - `editingIndexAtom`: `Atom<number | null>`
   - `editingUrlAtom`: `Atom<string>`
 
-### [ ] Task 3: Migrate Low-Complexity Components
+### [x] Task 3: Migrate Low-Complexity Components
 
 Refactor simple components to use atoms.
 
