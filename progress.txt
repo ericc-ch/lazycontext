@@ -1,0 +1,8 @@
+Project initialized with Ralph workflow.
+
+- Created `plan.md` - project plan and tasks
+- Created `progress.txt` - progress tracking log
+
+Next: Begin working on first task.
+
+---
