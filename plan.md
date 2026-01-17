@@ -85,6 +85,6 @@ Ensure the application runs correctly and remove any leftover SolidJS traces.
 
 #### Subtasks
 
-- [ ] Run `bun run start` and verify functionality
-- [ ] Run `bun run typecheck` to catch any remaining type issues
-- [ ] Remove any unused imports or files
+- [x] Run `bun run start` and verify functionality
+- [x] Run `bun run typecheck` to catch any remaining type issues
+- [x] Remove any unused imports or files
