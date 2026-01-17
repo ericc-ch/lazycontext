@@ -1,5 +1,5 @@
-import { render } from "@opentui/solid"
+import { createRoot } from "@opentui/react"
 import { App } from "./app"
 import { renderer } from "./lib/theme"
 
-await render(() => <App />, renderer)
+createRoot(renderer).render(<App />)

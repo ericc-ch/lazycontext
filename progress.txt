@@ -11,14 +11,18 @@ Next: Begin working on first task.
 
 ### Tasks completed
 - Task 1: Update Dependencies and Configuration
+- Task 2: Refactor Main Entry Point
 
 ### Decisions made and why
 - Updated dependencies before refactoring source code to ensure React packages were available before migration
 - Used `bun remove` and `bun add` commands as specified in plan.md for dependency management
+- Migrated main.tsx to use `createRoot(renderer).render(<App />)` pattern per @opentui/react documentation
 
 ### Blockers encountered
-- None - dependency updates completed successfully
+- None - main.tsx refactoring completed successfully
+- Remaining type errors are from unmigrated files (app.tsx and components) which will be addressed in Tasks 3 and 4
 
 ### Files changed
 - package.json: Removed solid-js and @opentui/solid, added react, @types/react, and @opentui/react
 - tsconfig.json: Changed jsx from "preserve" to "react-jsx" and jsxImportSource from "@opentui/solid" to "@opentui/react"
+- src/main.tsx: Changed import from @opentui/solid to @opentui/react, replaced SolidJS render API with React createRoot API

@@ -29,7 +29,7 @@ Reference files:
 - `package.json` - dependencies
 - `tsconfig.json` - compiler options
 
-### [ ] Task 2: Refactor Main Entry Point
+### [x] Task 2: Refactor Main Entry Point
 
 Update `src/main.tsx` to use the React root API.
 
