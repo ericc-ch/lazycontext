@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/tsconfig.json",
 
   "compilerOptions": {
-    "jsx": "preserve",
-    "jsxImportSource": "@opentui/solid",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@opentui/react",
     "target": "ESNext",
     "lib": ["ESNext"],
     "module": "ESNext",
