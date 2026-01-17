@@ -16,6 +16,7 @@ export class ConfigError extends Data.TaggedError("ConfigError")<{
 }> {}
 
 const defaultConfig = new ConfigSchema({ repos: [] })
+const JsonSchema = Schema.parseJson(ConfigSchema, { space: 2 })
 
 export class Config extends Effect.Service<Config>()("Config", {
   accessors: true,
@@ -38,8 +39,7 @@ export class Config extends Effect.Service<Config>()("Config", {
 
       const content = yield* fs.readFileString(fullPath)
 
-      const decode = Schema.decodeUnknown(Schema.parseJson(ConfigSchema))
-      return yield* decode(content)
+      return yield* Schema.decodeUnknown(JsonSchema)(content)
     })
 
     return {
@@ -60,8 +60,7 @@ export class Config extends Effect.Service<Config>()("Config", {
         const newConfig = new ConfigSchema({
           repos: [...config.repos, new RepoSchema({ name: repo, url })],
         })
-        const json = yield* Schema.encode(ConfigSchema)(newConfig)
-        const content = JSON.stringify(json, null, 2)
+        const content = yield* Schema.encode(JsonSchema)(newConfig)
         yield* ensureDirExists
 
         yield* fs.writeFileString(configPath, content)
@@ -79,8 +78,7 @@ export class Config extends Effect.Service<Config>()("Config", {
         }
 
         const newConfig = new ConfigSchema({ repos: filtered })
-        const json = yield* Schema.encode(ConfigSchema)(newConfig)
-        const content = JSON.stringify(json, null, 2)
+        const content = yield* Schema.encode(JsonSchema)(newConfig)
         yield* ensureDirExists
         const fullPath = path.join(cwd, configPath)
         yield* fs.writeFileString(fullPath, content)

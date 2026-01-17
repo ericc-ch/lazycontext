@@ -6,6 +6,7 @@ import {
 import { Layer, ManagedRuntime, pipe } from "effect"
 import { Config } from "./services/config"
 import { Git } from "./services/git"
+import { Atom } from "@effect-atom/atom-react"
 
 const AppLive = pipe(
   Layer.empty,
@@ -16,4 +17,5 @@ const AppLive = pipe(
   Layer.provide(BunFileSystem.layer),
 )
 
-export const runtime = ManagedRuntime.make(AppLive)
+export const runtime = ManagedRuntime.make(AppLive, Atom.runtime.memoMap)
+export const runtimeAtom = Atom.runtime(AppLive)

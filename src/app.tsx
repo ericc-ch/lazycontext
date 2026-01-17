@@ -255,8 +255,9 @@ export function App() {
 
   useEffect(() => {
     void loadConfig()
-    useKeyboard(handleKeyboard)
   }, [])
+
+  useKeyboard(handleKeyboard)
 
   const bgColor = () => theme.bg[1] ?? RGBA.fromHex("#0f0f14")
   const isWide = () => dimensions.width >= 100

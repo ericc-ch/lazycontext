@@ -23,6 +23,7 @@
     "typecheck": "tsgo"
   },
   "dependencies": {
+    "@effect-atom/atom-react": "^0.4.5",
     "@effect/platform": "^0.94.1",
     "@effect/platform-bun": "^0.87.0",
     "@opentui/core": "^0.1.74",
