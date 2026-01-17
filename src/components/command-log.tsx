@@ -1,6 +1,6 @@
 import { For } from "solid-js"
 import { TextAttributes, RGBA } from "@opentui/core"
-import { useTheme } from "./provider-theme"
+import { theme } from "../lib/theme"
 
 export interface LogEntry {
   id: string
@@ -15,8 +15,6 @@ export interface CommandLogProps {
 }
 
 export function CommandLog(props: CommandLogProps) {
-  const theme = useTheme()
-
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString("en-US", {
       hour12: false,
@@ -29,13 +27,13 @@ export function CommandLog(props: CommandLogProps) {
   const getTypeColor = (type: LogEntry["type"]) => {
     switch (type) {
       case "success":
-        return theme()?.success[6] ?? RGBA.fromHex("#4ade80")
+        return theme.success[6] ?? RGBA.fromHex("#4ade80")
       case "error":
-        return theme()?.error[6] ?? RGBA.fromHex("#f87171")
+        return theme.error[6] ?? RGBA.fromHex("#f87171")
       case "command":
-        return theme()?.primary[6] ?? RGBA.fromHex("#60a5fa")
+        return theme.primary[6] ?? RGBA.fromHex("#60a5fa")
       default:
-        return theme()?.fg[4] ?? RGBA.fromHex("#a1a1aa")
+        return theme.fg[4] ?? RGBA.fromHex("#a1a1aa")
     }
   }
 
@@ -57,7 +55,7 @@ export function CommandLog(props: CommandLogProps) {
       flexDirection="column"
       flexGrow={1}
       flexShrink={1}
-      backgroundColor={theme()?.bg[2] ?? RGBA.fromHex("#1a1b26")}
+      backgroundColor={theme.bg[2] ?? RGBA.fromHex("#1a1b26")}
       paddingLeft={1}
       paddingRight={1}
       paddingTop={1}
@@ -65,13 +63,13 @@ export function CommandLog(props: CommandLogProps) {
     >
       <box flexDirection="row" alignItems="center" gap={1} paddingBottom={1}>
         <text
-          fg={theme()?.fg[5] ?? RGBA.fromHex("#71717a")}
+          fg={theme.fg[5] ?? RGBA.fromHex("#71717a")}
           attributes={TextAttributes.DIM}
         >
           Command Log
         </text>
         <text
-          fg={theme()?.fg[5] ?? RGBA.fromHex("#71717a")}
+          fg={theme.fg[5] ?? RGBA.fromHex("#71717a")}
           attributes={TextAttributes.DIM}
         >
           {props.logs.length} entries
@@ -83,7 +81,7 @@ export function CommandLog(props: CommandLogProps) {
           each={props.logs}
           fallback={
             <text
-              fg={theme()?.fg[5] ?? RGBA.fromHex("#71717a")}
+              fg={theme.fg[5] ?? RGBA.fromHex("#71717a")}
               attributes={TextAttributes.DIM}
             >
               No logs yet
@@ -94,7 +92,7 @@ export function CommandLog(props: CommandLogProps) {
             <box flexDirection="column" paddingTop={0} paddingBottom={0}>
               <box flexDirection="row" alignItems="center" gap={1}>
                 <text
-                  fg={theme()?.fg[5] ?? RGBA.fromHex("#71717a")}
+                  fg={theme.fg[5] ?? RGBA.fromHex("#71717a")}
                   attributes={TextAttributes.DIM}
                   style={{ width: 8 }}
                 >
@@ -103,14 +101,14 @@ export function CommandLog(props: CommandLogProps) {
                 <text fg={getTypeColor(entry.type)} style={{ width: 3 }}>
                   {getTypeLabel(entry.type)}
                 </text>
-                <text fg={theme()?.fg[3] ?? RGBA.fromHex("#a1a1aa")}>
+                <text fg={theme.fg[3] ?? RGBA.fromHex("#a1a1aa")}>
                   {entry.message}
                 </text>
               </box>
               {entry.details && (
                 <box paddingLeft={12} flexDirection="column">
                   <text
-                    fg={theme()?.fg[5] ?? RGBA.fromHex("#71717a")}
+                    fg={theme.fg[5] ?? RGBA.fromHex("#71717a")}
                     attributes={TextAttributes.DIM}
                   >
                     {entry.details}

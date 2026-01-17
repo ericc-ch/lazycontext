@@ -1,7 +1,7 @@
 import { RGBA, type KeyEvent } from "@opentui/core"
 import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/solid"
 import { createSignal, onMount, Show } from "solid-js"
-import { useTheme } from "./components/provider-theme"
+import { theme } from "./lib/theme"
 import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
@@ -23,7 +23,6 @@ interface AppState {
 
 export function App() {
   const renderer = useRenderer()
-  const theme = useTheme()
   const dimensions = useTerminalDimensions()
 
   const [state, setState] = createSignal<AppState>({
@@ -259,7 +258,7 @@ export function App() {
     useKeyboard(handleKeyboard)
   })
 
-  const bgColor = () => theme()?.bg[1] ?? RGBA.fromHex("#0f0f14")
+  const bgColor = () => theme.bg[1] ?? RGBA.fromHex("#0f0f14")
   const isWide = () => dimensions().width >= 100
 
   return (

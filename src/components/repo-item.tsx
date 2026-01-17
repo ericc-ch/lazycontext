@@ -7,7 +7,7 @@ import {
 } from "@opentui/core"
 import { usePaste } from "@opentui/solid"
 import type { RepoSchema } from "../services/config"
-import { useTheme } from "./provider-theme"
+import { theme } from "../lib/theme"
 import { parseGithubUrl } from "../lib/url"
 import { Effect } from "effect"
 
@@ -23,20 +23,19 @@ export interface RepoItemProps {
 }
 
 export function RepoItem(props: RepoItemProps) {
-  const theme = useTheme()
   const [editUrl, setEditUrl] = createSignal("")
   const [parseError, setParseError] = createSignal<string | null>(null)
 
   const statusColor = () => {
     switch (props.status) {
       case "synced":
-        return theme()?.success[6] ?? RGBA.fromHex("#22c55e")
+        return theme.success[6] ?? RGBA.fromHex("#22c55e")
       case "modified":
-        return theme()?.warning[6] ?? RGBA.fromHex("#eab308")
+        return theme.warning[6] ?? RGBA.fromHex("#eab308")
       case "missing":
-        return theme()?.error[6] ?? RGBA.fromHex("#ef4444")
+        return theme.error[6] ?? RGBA.fromHex("#ef4444")
       default:
-        return theme()?.grays[5] ?? RGBA.fromHex("#888888")
+        return theme.grays[5] ?? RGBA.fromHex("#888888")
     }
   }
 
@@ -116,8 +115,8 @@ export function RepoItem(props: RepoItemProps) {
       paddingBottom={1}
       backgroundColor={
         props.selected ?
-          (theme()?.fg[3] ?? RGBA.fromHex("#334455"))
-        : (theme()?.bg[2] ?? RGBA.fromHex("#1a1b26"))
+          (theme.fg[3] ?? RGBA.fromHex("#334455"))
+        : (theme.bg[2] ?? RGBA.fromHex("#1a1b26"))
       }
       onMouseDown={handleMouseDown}
     >
@@ -134,15 +133,15 @@ export function RepoItem(props: RepoItemProps) {
                 <text
                   fg={
                     props.selected ?
-                      (theme()?.info[0] ?? RGBA.fromHex("#00AAFF"))
-                    : (theme()?.grays[5] ?? RGBA.fromHex("#888888"))
+                      (theme.info[0] ?? RGBA.fromHex("#00AAFF"))
+                    : (theme.grays[5] ?? RGBA.fromHex("#888888"))
                   }
                 >
                   {props.selected ? ">" : " "}
                 </text>
               </box>
               <text
-                fg={theme()?.fg[0] ?? RGBA.fromHex("#FFFFFF")}
+                fg={theme.fg[0] ?? RGBA.fromHex("#FFFFFF")}
                 attributes={TextAttributes.BOLD}
               >
                 {props.repo.name}
@@ -151,7 +150,7 @@ export function RepoItem(props: RepoItemProps) {
             <box flexDirection="row" alignItems="center" gap={2}>
               <text fg={statusColor()}>{statusText()}</text>
               <Show when={props.lastUpdate}>
-                <text fg={theme()?.fg[5] ?? RGBA.fromHex("#666666")}>
+                <text fg={theme.fg[5] ?? RGBA.fromHex("#666666")}>
                   {props.lastUpdate}
                 </text>
               </Show>
@@ -161,7 +160,7 @@ export function RepoItem(props: RepoItemProps) {
       >
         <box flexDirection="row" alignItems="center" gap={2}>
           <box width={2}>
-            <text fg={theme()?.info[0] ?? RGBA.fromHex("#00AAFF")}>"+"</text>
+            <text fg={theme.info[0] ?? RGBA.fromHex("#00AAFF")}>"+"</text>
           </box>
           <box flexGrow={1}>
             <input
@@ -172,14 +171,14 @@ export function RepoItem(props: RepoItemProps) {
               focused
               style={{
                 flexGrow: 1,
-                backgroundColor: theme()?.bg[2] ?? RGBA.fromHex("#1a1b26"),
-                cursorColor: theme()?.info[0] ?? RGBA.fromHex("#00AAFF"),
+                backgroundColor: theme.bg[2] ?? RGBA.fromHex("#1a1b26"),
+                cursorColor: theme.info[0] ?? RGBA.fromHex("#00AAFF"),
               }}
               onKeyDown={handleKeyDown}
             />
           </box>
           <Show when={parseError()}>
-            <text fg={theme()?.error[6] ?? RGBA.fromHex("#ef4444")}>
+            <text fg={theme.error[6] ?? RGBA.fromHex("#ef4444")}>
               {parseError()}
             </text>
           </Show>
