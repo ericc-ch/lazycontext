@@ -23,7 +23,7 @@ Reference files:
 - Import `RegistryProvider` from `@effect-atom/atom-react`.
 - Wrap `<App />` in `<RegistryProvider>`.
 
-### [ ] Task 2: Define Atom State
+### [x] Task 2: Define Atom State
 
 Create a centralized state definition using Atoms.
 
