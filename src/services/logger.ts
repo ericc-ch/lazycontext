@@ -1,21 +1,29 @@
 import { PlatformLogger } from "@effect/platform"
-import { Effect, Inspectable, Logger, LogLevel, pipe } from "effect"
+import {
+  Effect,
+  Inspectable,
+  Logger,
+  LogLevel,
+  pipe,
+  SubscriptionRef,
+} from "effect"
 import path from "node:path"
-import type { OpenCodeLogLevel } from "../types"
 import { PLUGIN_NAME, ProviderConfig } from "../services/config"
 import { OpenCodeContext } from "../services/opencode"
-import { xdgData } from "xdg-basedir"
+import type { OpenCodeLogLevel } from "../types"
 
-interface MemoryLog {
+interface LogItem {
   level: LogLevel.Literal
   message: string
 }
 
-const logs: MemoryLog[] = []
+class MemoryLog extends Effect.Service<MemoryLog>()("MemoryLog", {
+  accessors: true,
+  effect: SubscriptionRef.make<LogItem[]>([]),
+}) {}
 
-const makeOpenCodeLogger = Effect.gen(function* () {
-  const openCode = yield* OpenCodeContext
-  const config = yield* ProviderConfig
+const makeMemoryLogger = Effect.gen(function* () {
+  const log = yield* MemoryLog.ref
 
   return Logger.make((log) => {
     let level: OpenCodeLogLevel = "debug"
@@ -27,6 +35,8 @@ const makeOpenCodeLogger = Effect.gen(function* () {
     } else if (LogLevel.greaterThanEqual(log.logLevel, LogLevel.Info)) {
       level = "info"
     }
+
+    Effect.ign
 
     const message = Inspectable.toStringUnknown(log.message)
 
@@ -41,11 +51,11 @@ const makeOpenCodeLogger = Effect.gen(function* () {
 })
 
 export const combinedLogger = Effect.gen(function* () {
-  const openCodeLogger = yield* makeOpenCodeLogger
+  const openCodeLogger = yield* makeMemoryLogger
   const fileLogger = yield* pipe(
     Logger.jsonLogger,
     PlatformLogger.toFile(path.join(LOG_DIR, `${PLUGIN_NAME}.log`)),
   )
-
+  Logger.rep
   return Logger.zip(openCodeLogger, fileLogger)
 })
