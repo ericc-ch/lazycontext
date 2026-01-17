@@ -1,35 +1,94 @@
-# Project Name
+# LazyContext State Migration
 
 ## High Level Overview
-Brief description of what this project aims to accomplish.
+
+Migrate the application's state management from React's `useState` and `useEffect` to `effect-atom` to leverage Effect's ecosystem for better async handling, testability, and state isolation.
 
 ## Tasks
 
-### Task 1: Task Title
-Brief description of what this task accomplishes.
+### [x] Task 1: Infrastructure Setup
 
-#### Subtasks
-- [ ] Subtask 1: Short description
-- [ ] Subtask 2: Short description
-- [ ] Subtask 3: Short description
+Initialize the Atom Registry in the application root.
 
 #### Implementation Guide
-Overview of the approach to complete this task.
 
-- Step 1: High level first step
-- Step 2: Second step
-- Step 3: Third step
+- Modify `src/main.tsx` to wrap the `App` component with `RegistryProvider`.
 
 Reference files:
-- \`src/file1.ts\` - description
-- \`src/file2.py\` - description
+
+- `src/main.tsx`
 
 #### Detailed Requirements
-Overview of the functional and non-functional requirements.
 
-- Requirement 1
-- Requirement 2
-- Requirement 3
+- Import `RegistryProvider` from `@effect-atom/atom-react`.
+- Wrap `<App />` in `<RegistryProvider>`.
 
-### Task 2: Task Title
-...
+### [ ] Task 2: Define Atom State
+
+Create a centralized state definition using Atoms.
+
+#### Subtasks
+
+- [ ] Create `src/state/atoms.ts` (or `src/state/` folder structure).
+- [ ] Define atoms for Domain State (Repos, Statuses).
+- [ ] Define atoms for UI State (Views, Selections, Edit forms).
+
+#### Implementation Guide
+
+- Create `src/state/atoms.ts` (or `src/state/atoms/` for modularity).
+- Define `reposAtom` and `statusesAtom` using `Atom.make`.
+- Define derived atoms if necessary (e.g. `syncedCountAtom`).
+- Define UI atoms: `viewAtom`, `selectedIndexAtom`, `editingIndexAtom`.
+
+#### Detailed Requirements
+
+- **Domain State**:
+  - `reposAtom`: `Atom<RepoSchema[]>`
+  - `statusesAtom`: `Atom<Map<string, Status>>`
+- **UI State**:
+  - `viewAtom`: `Atom<"list" | "add">`
+  - `selectedIndexAtom`: `Atom<number>`
+  - `editingIndexAtom`: `Atom<number | null>`
+  - `editingUrlAtom`: `Atom<string>`
+
+### [ ] Task 3: Migrate Low-Complexity Components
+
+Refactor simple components to use atoms.
+
+#### Subtasks
+
+- [ ] Refactor `src/components/add-repo.tsx`.
+- [ ] Refactor `src/components/repo-item.tsx`.
+
+#### Implementation Guide
+
+- **AddRepo**:
+  - Replace `useState` for `url` and `status` with atoms (possibly local or scoped if appropriate, but global if shared).
+  - Use `useAtom` or `useAtomSet`.
+- **RepoItem**:
+  - Replace local edit state with atoms if they need to be persisted or accessed globally, or keep them local if strict isolation is preferred (but `effect-atom` can handle local too via `useAtom` on a stable atom ref).
+
+#### Detailed Requirements
+
+- Components should no longer use `useState` for logic that affects the broader app or data persistence.
+
+### [ ] Task 4: Migrate App Component
+
+Refactor the main App component to remove centralized state management.
+
+#### Subtasks
+
+- [ ] Remove `useState<AppState>` from `src/app.tsx`.
+- [ ] Replace prop drilling with direct Atom usage in children where appropriate, or use Atoms in `App` and pass data.
+- [ ] Move async logic (loading config, checking statuses) to `Atom.make` with effects or `useAtomMount`/`Atom.fn`.
+
+#### Implementation Guide
+
+- Use `useAtomValue` for reading state.
+- Use `useAtomSet` or `Atom.modify` for updates.
+- Replace `useEffect` data fetching with Atom-based effects.
+
+#### Detailed Requirements
+
+- `App` component should be significantly simpler, acting mostly as a layout coordinator.
+- All state logic moved to `src/state/`.
