@@ -26,6 +26,7 @@ export class Config extends Effect.Service<Config>()("Config", {
 
     const cwd = yield* Effect.sync(() => process.cwd())
     const configPath = path.join(cwd, "lazycontext.json")
+    yield* Effect.log("Loading config from", configPath)
 
     const ensureDirExists = Effect.gen(function* () {
       const dirPath = path.join(cwd, ".context")
@@ -35,15 +36,19 @@ export class Config extends Effect.Service<Config>()("Config", {
     const readConfigFile = Effect.gen(function* () {
       const fullPath = path.join(cwd, configPath)
       const exists = yield* fs.exists(fullPath)
-      if (!exists) return defaultConfig
+      if (!exists) {
+        yield* Effect.log("Config file not found, returning default config")
+        return defaultConfig
+      }
 
       const content = yield* fs.readFileString(fullPath)
+      yield* Effect.log("Config file found, content:", content)
 
       return yield* Schema.decodeUnknown(JsonSchema)(content)
     })
 
     return {
-      load: Effect.fn(function* () {
+      load: Effect.gen(function* () {
         yield* ensureDirExists
         return yield* readConfigFile
       }),

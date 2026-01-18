@@ -1,10 +1,20 @@
 import { createRoot } from "@opentui/react"
-import { RegistryProvider } from "@effect-atom/atom-react"
 import { App } from "./app"
 import { renderer } from "./lib/theme"
+import { makeRuntime } from "./runtime"
+import { ProviderRuntime } from "./components/provider-runtime"
 
-createRoot(renderer).render(
-  <RegistryProvider>
-    <App />
-  </RegistryProvider>,
-)
+async function main() {
+  const runtime = await makeRuntime()
+  renderer.on("destroy", () => {
+    void runtime.dispose()
+  })
+
+  createRoot(renderer).render(
+    <ProviderRuntime runtime={runtime}>
+      <App />
+    </ProviderRuntime>,
+  )
+}
+
+void main()

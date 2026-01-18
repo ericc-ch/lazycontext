@@ -1,36 +1,16 @@
+import { useAtom, useAtomValue } from "@effect-atom/atom-react"
 import { RGBA, type KeyEvent } from "@opentui/core"
 import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/react"
-import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react"
 import { useEffect } from "react"
-import { theme } from "./lib/theme"
 import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
 import { match } from "./lib/keybinds"
-import { atomRuntime, serverRuntime } from "./runtime"
+import { theme } from "./lib/theme"
 import { Config } from "./services/config"
 import { Git } from "./services/git"
-import {
-  reposAtom,
-  statusesAtom,
-  viewAtom,
-  selectedIndexAtom,
-  editingIndexAtom,
-  editingUrlAtom,
-  type Status,
-} from "./state/atoms"
-import { Effect, pipe } from "effect"
 
 const targetDir = ".context"
-
-const configAtom = pipe(
-  Effect.gen(function* () {
-    const configService = yield* Config
-    return yield* configService.load()
-  }),
-  (effect) => atomRuntime.atom(effect),
-  (atom) => Atom.withReactivity(["config"])(atom),
-)
 
 export function App() {
   const renderer = useRenderer()
