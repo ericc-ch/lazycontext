@@ -7,8 +7,28 @@ Next: Begin working on first task.
 
 ---
 
-## Session 1: Task 1 - Refactor app.tsx
+## Session 2: Task 2 - Refactor add-repo.tsx
 
+### Tasks Completed
+- Refactored `src/components/add-repo.tsx` to use React state (`useState`) instead of Effect atoms
+- Removed `@effect-atom/atom` and `@effect-atom/atom-react` imports
+- Removed `Effect` and `parseGithubUrl` imports
+- Replaced `Effect.runPromiseExit(parseGithubUrl(...))` with simple regex validation
+- Replaced atom hooks (`useAtom`) with standard `useState` for `url`, `status`, and `error`
+
+### Decisions Made
+- Removed the module-level atoms (`AddRepoUrlAtom`, `AddRepoStatusAtom`, `AddRepoErrorAtom`) and moved them to component-local `useState`
+- Used a simple regex (`^https:\/\/github\.com\/[\w-]+\/[\w.-]+\.git$`) to validate GitHub URLs instead of Effect-based `parseGithubUrl`
+- Kept `RepoSchema` import as it's used in the `onAdd` prop type definition
+- Maintained the same UI behavior and status messages
+
+### Blockers Encountered
+- None for this task
+
+### Files Changed
+- `src/components/add-repo.tsx` - Complete refactor from Effect atoms to React state
+
+---
 ### Tasks Completed
 - Refactored `src/app.tsx` to use React state (`useState`) instead of Effect atoms
 - Removed all `@effect-atom/atom-react` imports

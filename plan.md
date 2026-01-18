@@ -34,7 +34,7 @@ Reference files:
 - App must be fully functional for UI testing with dummy data
 - All TypeScript errors regarding missing atoms must be resolved
 
-### [ ] Task 2: Refactor add-repo.tsx to remove atoms and Effect logic
+### [x] Task 2: Refactor add-repo.tsx to remove atoms and Effect logic
 
 #### Subtasks
 

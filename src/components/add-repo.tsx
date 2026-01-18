@@ -1,10 +1,7 @@
 import { TextAttributes, RGBA } from "@opentui/core"
-import { make } from "@effect-atom/atom/Atom"
-import { useAtom } from "@effect-atom/atom-react"
+import { useState } from "react"
 import { RepoSchema } from "../services/config"
 import { theme } from "../lib/theme"
-import { parseGithubUrl } from "../lib/url"
-import { Effect } from "effect"
 
 export interface AddRepoProps {
   onAdd: (repo: RepoSchema) => void
@@ -13,14 +10,16 @@ export interface AddRepoProps {
 
 export type AddRepoStatus = "idle" | "adding" | "cloning" | "success" | "error"
 
-const AddRepoUrlAtom = make<string>("")
-const AddRepoStatusAtom = make<AddRepoStatus>("idle")
-const AddRepoErrorAtom = make<string | null>(null)
+const GITHUB_URL_REGEX = /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\.git$/
+
+function isValidGithubUrl(url: string): boolean {
+  return GITHUB_URL_REGEX.test(url.trim())
+}
 
 export function AddRepo(props: AddRepoProps) {
-  const [url, setUrl] = useAtom(AddRepoUrlAtom)
-  const [status, setStatus] = useAtom(AddRepoStatusAtom)
-  const [, setError] = useAtom(AddRepoErrorAtom)
+  const [url, setUrl] = useState("")
+  const [status, setStatus] = useState<AddRepoStatus>("idle")
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
     const inputUrl = url.trim()
@@ -28,8 +27,7 @@ export function AddRepo(props: AddRepoProps) {
 
     setStatus("adding")
 
-    const parseResult = await Effect.runPromiseExit(parseGithubUrl(inputUrl))
-    if (parseResult._tag === "Failure") {
+    if (!isValidGithubUrl(inputUrl)) {
       setStatus("idle")
       setError("Invalid GitHub URL")
       return
@@ -96,7 +94,7 @@ export function AddRepo(props: AddRepoProps) {
           </text>
         : status === "error" ?
           <text fg={theme.error[6] ?? RGBA.fromHex("#ef4444")}>
-            Error occurred
+            {error ?? "Error occurred"}
           </text>
         : null}
       </box>
