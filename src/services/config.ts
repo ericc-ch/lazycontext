@@ -13,7 +13,6 @@ const defaultConfig = new ConfigSchema({ repos: [] })
 const JsonSchema = Schema.parseJson(ConfigSchema, { space: 2 })
 
 export class Config extends Effect.Service<Config>()("Config", {
-  accessors: true,
   effect: Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
@@ -49,41 +48,6 @@ export class Config extends Effect.Service<Config>()("Config", {
       load: Effect.gen(function* () {
         yield* ensureDirExists
         return yield* readConfigFile
-      }),
-
-      addRepo: Effect.fn(function* (url: string) {
-        const config = yield* readConfigFile
-
-        if (config.repos.includes(url)) {
-          return config
-        }
-
-        const newConfig = new ConfigSchema({
-          repos: [...config.repos, url],
-        })
-        const content = yield* Schema.encode(JsonSchema)(newConfig)
-        yield* ensureDirExists
-
-        yield* fs.writeFileString(configPath, content)
-        return newConfig
-      }),
-
-      removeRepo: Effect.fn(function* (url: string) {
-        const config = yield* readConfigFile
-
-        const filtered = config.repos.filter((repoUrl) => repoUrl !== url)
-        if (filtered.length === config.repos.length) {
-          return yield* new ConfigError({
-            message: `Repository ${url} not found`,
-          })
-        }
-
-        const newConfig = new ConfigSchema({ repos: filtered })
-        const content = yield* Schema.encode(JsonSchema)(newConfig)
-        yield* ensureDirExists
-        const fullPath = path.join(cwd, configPath)
-        yield* fs.writeFileString(fullPath, content)
-        return newConfig
       }),
     }
   }),

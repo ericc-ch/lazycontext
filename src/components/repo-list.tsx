@@ -1,36 +1,42 @@
-import { TextAttributes, RGBA } from "@opentui/core"
+import { RGBA, TextAttributes } from "@opentui/core"
+import { useKeyboard } from "@opentui/react"
+import { queryOptions, useQuery } from "@tanstack/react-query"
+import { Effect } from "effect"
+import { match } from "../lib/keybinds"
 import { theme } from "../lib/theme"
-import { RepoItem } from "./repo-item"
+import { Config } from "../services/config"
+import { useRuntime } from "./provider-runtime"
 
-export interface RepoListProps {
-  repos: string[]
-  statuses: Map<string, "synced" | "modified" | "missing">
-  selectedIndex: number
-  editingIndex: number | null
-  editingUrl: string
-  onSelect: (index: number) => void
-  onEnter?: () => void
-  onStartAdd?: () => void
-  onSaveEdit?: (url: string) => void
-  onCancelEdit?: () => void
-}
+export function RepoList() {
+  const runtime = useRuntime()
 
-export function RepoList(props: RepoListProps) {
-  const totalCount = props.repos.length
-  const statusCounts = () => {
-    const values = Array.from(props.statuses.values())
-    let synced = 0
-    let missing = 0
-    for (const s of values) {
-      if (s === "synced") synced++
-      else if (s === "missing") missing++
+  const reposQuery = queryOptions({
+    queryKey: ["repos"] as const,
+    queryFn: () =>
+      Effect.gen(function* () {
+        const configService = yield* Config
+        const config = yield* configService.load
+        return config.repos
+      }).pipe(runtime.runPromise),
+  })
+
+  const repos = useQuery(reposQuery)
+
+  useKeyboard((event) => {
+    if (!repos.data?.length) {
+      return
     }
-    return { synced, missing }
-  }
 
-  const counts = statusCounts()
-  const syncedCount = counts.synced
-  const missingCount = counts.missing
+    if (match(event, "navigate-down")) {
+      setSelectedIndex((prev) => Math.min(prev + 1, repos.data.length - 1))
+      return
+    }
+
+    if (match(event, "navigate-up")) {
+      setSelectedIndex((prev) => Math.max(prev - 1, 0))
+      return
+    }
+  })
 
   return (
     <box
@@ -52,92 +58,6 @@ export function RepoList(props: RepoListProps) {
           attributes={TextAttributes.BOLD}
         >
           Repositories
-        </text>
-        <text fg={theme.grays[5] ?? RGBA.fromHex("#888888")}>
-          {syncedCount}/{totalCount} synced
-          {missingCount > 0 && (
-            <text fg={theme.error[6] ?? RGBA.fromHex("#ef4444")}>
-              {" "}
-              ({missingCount} missing)
-            </text>
-          )}
-        </text>
-      </box>
-
-      <box flexDirection="column" flexGrow={1}>
-        {props.repos.length > 0 || props.editingIndex !== null ?
-          <>
-            {props.repos.map((url, index) => (
-              <RepoItem
-                url={url}
-                status={props.statuses.get(url) ?? "missing"}
-                selected={index === props.selectedIndex}
-                onClick={() => props.onSelect(index)}
-              />
-            ))}
-            {props.editingIndex !== null ?
-              <RepoItem
-                url={props.editingUrl}
-                status="missing"
-                selected={true}
-                editing={true}
-                onSave={props.onSaveEdit ?? (() => {})}
-                onCancel={props.onCancelEdit ?? (() => {})}
-              />
-            : null}
-          </>
-        : <box
-            flexGrow={1}
-            justifyContent="center"
-            alignItems="center"
-            paddingTop={2}
-            paddingBottom={2}
-          >
-            <text fg={theme.fg[5] ?? RGBA.fromHex("#666666")}>
-              No repositories
-            </text>
-          </box>
-        }
-      </box>
-
-      <box
-        paddingLeft={1}
-        paddingRight={1}
-        paddingTop={1}
-        paddingBottom={1}
-        backgroundColor={theme.bg[3] ?? RGBA.fromHex("#252530")}
-        flexDirection="row"
-        gap={2}
-      >
-        <text
-          fg={theme.fg[5] ?? RGBA.fromHex("#666666")}
-          attributes={TextAttributes.DIM}
-        >
-          navigate
-        </text>
-        <text
-          fg={theme.fg[5] ?? RGBA.fromHex("#666666")}
-          attributes={TextAttributes.DIM}
-        >
-          |
-        </text>
-        <text
-          fg={theme.fg[5] ?? RGBA.fromHex("#666666")}
-          attributes={TextAttributes.DIM}
-        >
-          Enter sync
-        </text>
-        <text
-          fg={theme.fg[5] ?? RGBA.fromHex("#666666")}
-          attributes={TextAttributes.DIM}
-        >
-          |
-        </text>
-        <text
-          fg={theme.fg[5] ?? RGBA.fromHex("#666666")}
-          attributes={TextAttributes.DIM}
-        >
-          a add repo
         </text>
       </box>
     </box>
