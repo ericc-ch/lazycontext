@@ -1,13 +1,13 @@
 import { RGBA, type KeyEvent } from "@opentui/core"
 import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/react"
-import { useAtom } from "@effect-atom/atom-react"
+import { Atom, useAtom, useAtomValue } from "@effect-atom/atom-react"
 import { useEffect } from "react"
 import { theme } from "./lib/theme"
 import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
 import { match } from "./lib/keybinds"
-import { runtime } from "./runtime"
+import { atomRuntime, serverRuntime } from "./runtime"
 import { Config } from "./services/config"
 import { Git } from "./services/git"
 import {
@@ -19,12 +19,26 @@ import {
   editingUrlAtom,
   type Status,
 } from "./state/atoms"
+import { Effect, pipe } from "effect"
 
 const targetDir = ".context"
+
+const configAtom = pipe(
+  Effect.gen(function* () {
+    const configService = yield* Config
+    return yield* configService.load()
+  }),
+  (effect) => atomRuntime.atom(effect),
+  (atom) => Atom.withReactivity(["config"])(atom),
+)
 
 export function App() {
   const renderer = useRenderer()
   const dimensions = useTerminalDimensions()
+
+  const config = useAtomValue(configAtom)
+
+  console.log(config)
 
   const [repos, setRepos] = useAtom(reposAtom)
   const [statuses, setStatuses] = useAtom(statusesAtom)
@@ -35,7 +49,7 @@ export function App() {
 
   const loadConfig = async () => {
     try {
-      const config = await runtime.runPromise(Config.load())
+      const config = await serverRuntime.runPromise(Config.load())
       setRepos([...config.repos])
       await checkAllStatuses()
     } catch (error: unknown) {
@@ -53,7 +67,7 @@ export function App() {
     for (const repo of currentRepos) {
       if (!repo.name) continue
       try {
-        const status = await runtime.runPromise(
+        const status = await serverRuntime.runPromise(
           Git.checkStatus(repo, targetDir),
         )
         statusesMap.set(repo.name, status)
@@ -73,15 +87,15 @@ export function App() {
     setView("list")
 
     try {
-      const config = await runtime.runPromise(Config.addRepo(url))
+      const config = await serverRuntime.runPromise(Config.addRepo(url))
 
       setRepos([...config.repos])
 
       const newRepo = config.repos.find((r) => r.url === url)
       if (newRepo && newRepo.name) {
-        await runtime.runPromise(Git.clone(newRepo, targetDir))
+        await serverRuntime.runPromise(Git.clone(newRepo, targetDir))
 
-        const status = await runtime.runPromise(
+        const status = await serverRuntime.runPromise(
           Git.checkStatus(newRepo, targetDir),
         )
 
@@ -108,12 +122,12 @@ export function App() {
       const currentStatus = statusesMap.get(repo.name)
 
       if (currentStatus === "missing") {
-        await runtime.runPromise(Git.clone(repo, targetDir))
+        await serverRuntime.runPromise(Git.clone(repo, targetDir))
       } else {
-        await runtime.runPromise(Git.pull(repo, targetDir))
+        await serverRuntime.runPromise(Git.pull(repo, targetDir))
       }
 
-      const newStatus = await runtime.runPromise(
+      const newStatus = await serverRuntime.runPromise(
         Git.checkStatus(repo, targetDir),
       )
 
@@ -142,12 +156,12 @@ export function App() {
           const currentStatus = statusesMap.get(repo.name)
 
           if (currentStatus === "missing") {
-            await runtime.runPromise(Git.clone(repo, targetDir))
+            await serverRuntime.runPromise(Git.clone(repo, targetDir))
           } else {
-            await runtime.runPromise(Git.pull(repo, targetDir))
+            await serverRuntime.runPromise(Git.pull(repo, targetDir))
           }
 
-          const newStatus = await runtime.runPromise(
+          const newStatus = await serverRuntime.runPromise(
             Git.checkStatus(repo, targetDir),
           )
           statusesMap.set(repo.name, newStatus)

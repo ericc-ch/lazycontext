@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@effect-atom/atom-react": "^0.4.5",
+    "@effect/experimental": "^0.58.0",
     "@effect/platform": "^0.94.1",
     "@effect/platform-bun": "^0.87.0",
     "@opentui/core": "^0.1.74",
@@ -33,7 +34,7 @@
     "react": "^19.2.3"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.67.0",
+    "@effect/language-service": "^0.69.1",
     "@types/bun": "^1.3.6",
     "@types/react": "^19.2.8",
     "@typescript/native-preview": "^7.0.0-dev.20260117.1",

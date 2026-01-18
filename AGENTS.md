@@ -25,6 +25,15 @@ Fight entropy. Leave the codebase better than you found it.
 
 Minimize explicit type annotations; let TypeScript infer types where possible
 
+### Formatting
+
+- Run `bun run format` before committing; formatting is enforced by CI
+- Use 2 spaces for indentation; do not use tabs
+- Maximum line length: 100 characters
+- Use trailing commas in multi-line object and array literals
+- Use semicolons consistently; the project uses them
+- Format import statements alphabetically by module path within groups
+
 ### Import
 
 ```typescript
@@ -33,6 +42,14 @@ import { Concrete, type SomeType } from "./module" // Mixed imports
 import { TextAttributes } from "@opentui/core" // Use barrel import
 import { render } from "@opentui/solid"
 ```
+
+### Type Annotations
+
+- Prefer inference for local variables and function return types
+- Explicitly type function parameters and public API surfaces
+- Use generics instead of `any`; constrain with meaningful bounds
+- Use branded types for domain primitives (e.g., `type UserId = string & { readonly brand: unique symbol }`)
+- Avoid type assertions (`as`) when safer alternatives exist
 
 ## Design Principles
 
@@ -54,14 +71,83 @@ When working with Effect:
 
 - Read `docs/effect.md` for service patterns, error handling, and naming conventions
 - Explore `.context/effect/` for reference implementations
+- Explore `.context/effect-atom/` for effect-atom patterns
 - Read `https://effect.website/llms.txt` for index of Effect documentation
 
 Do not use subagents when reading from `docs/*`
 Use these as authoritative sources for API usage and coding conventions.
 
-### Priority Order for Documentation
+## Testing
+
+- Write tests alongside implementation; use the `*.test.ts` naming convention
+- Use Effect's `it` and `describe` from `@effect/testing` for consistency
+- Mock dependencies using Effect's `MockContext` and `mockService` patterns
+- Group related tests with `describe` blocks that match directory/file structure
+- Test both success and failure paths; cover error scenarios thoroughly
+- Keep test files close to implementation; co-locate in same directory when possible
+
+## Error Handling
+
+- Use Effect's `Cause` and `FiberFailure` for structured error representation
+- Prefer `Effect.try` and `Effect.tryPromise` for synchronous and async operations that may throw
+- Define specific error types using branded types or tagged error unions
+- Use `Effect.catchAll` and `Effect.catchTag` for granular error handling
+- Never swallow errors silently; log or propagate using Effect's error channels
+- Validate inputs early and fail fast with descriptive error messages
+- Avoid try-catch for control flow; use Effect's type-level error tracking instead
+
+## Naming Conventions
+
+- **Files**: kebab-case for components (`sidebar-layout.tsx`), snake_case for utilities (`fetch_api.ts`)
+- **Variables**: camelCase for local variables and function parameters
+- **Constants**: SCREAMING_SNAKE_CASE for compile-time constants, camelCase for Effect layer constants
+- **Functions**: verb-noun pattern for actions (`createUser`, `fetchConfig`), predicate functions start with `is`/`has`/`can`
+- **Types/Interfaces**: PascalCase for types, interfaces, and classes; prefix with `T` only for generic placeholders
+- **Effect Layers**: suffix with `Layer` (e.g., `HttpClientLayer`, `DatabaseLayer`)
+- **Effect Services**: suffix with `Service` (e.g., `LoggerService`, `ConfigService`)
+- **Classes**: PascalCase; use singular nouns for entity classes (`User`, `Config`)
+- **Booleans**: use positive phrasing (`isEnabled` over `isNotDisabled`)
+- **Abbreviations**: avoid unless universally understood (use `config` over `cfg`, `http` over `httpClient`)
+
+## Component Patterns
+
+- Use functional components exclusively; no class components
+- Props interfaces should be named `{ComponentName}Props` and exported when reused
+- Destructure props in component signature; provide default values for optional props
+- Use OpenTUI's composition API: `Slot` for extensibility, `Class` for conditional styling
+- Keep components focused: single responsibility, extract complex logic to custom hooks
+- Custom hooks must use `use` prefix and return typed results (`useCounter`, `useLocalStorage`)
+- Memoize expensive computations with `useMemo` and callbacks with `useCallback`
+- Use `For` and `Show` control flow components instead of array methods and ternary operators
+
+## File Organization
+
+- Organize by feature, not by type; group related components, hooks, and utilities together
+- Barrel exports (`index.ts`) for public APIs only; avoid deep directory nesting
+- Keep `src/` root for entry points and cross-cutting concerns
+- Use absolute imports for project modules; relative imports only for sibling/triple-dot parent imports
+- Place tests adjacent to implementation; use `__tests__` folder only for integration/e2e tests
+
+## Performance
+
+- Profile before optimizing; use OpenTUI's devtools to identify re-renders
+- Use `useMemo` and `useCallback` sparingly; dependency arrays must be accurate
+- Virtualize long lists with OpenTUI's `Virtual` component
+- Lazy load routes and heavy components using `lazy` and `Suspense`
+- Avoid object/array prop mutations; treat props as immutable
+- Batch state updates when possible; prefer single state object over multiple useState calls
+
+## Git Workflow
+
+- Write conventional commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`
+- Keep commits atomic and focused; one purpose per commit
+- Use imperative mood in commit messages ("Add feature" not "Added feature")
+- Squash WIP commits before merging; rebase onto main frequently
+- Never commit directly to main; use feature branches and pull requests
+
+## Priority Order for Documentation
 
 1. First, explore `.context/` directories for reference implementations and patterns
 2. Then, read relevant `docs/*.md` files for API usage and conventions
 3. Only use the documentation tool (Context7) when information is not available in context or docs directories
-4. Use `github_grep` to find real-world code examples from public repositories for implementation patterns and best practices
+4. Use `codesearch` to find real-world code examples from public repositories for implementation patterns and best practices
