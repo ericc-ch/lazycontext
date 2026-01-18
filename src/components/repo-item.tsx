@@ -152,6 +152,7 @@ function getStatusText(
 
 export function RepoItem(props: RepoItemProps) {
   const statusQuery = useRepoStatus(props.url)
+  const [isHovered, setIsHovered] = useState(false)
   const effectiveStatus: RepoStatus = useMemo(() => {
     if (props.syncing) {
       return "syncing"
@@ -174,11 +175,16 @@ export function RepoItem(props: RepoItemProps) {
   const statusIcon = getStatusIcon(effectiveStatus)
   const statusText = getStatusText(effectiveStatus, props.syncType ?? null)
 
+  const hoverBackgroundColor = useMemo(() => {
+    return theme.bg[2] ?? RGBA.fromHex("#1a1b26")
+  }, [])
+
   return (
     <box
       backgroundColor={
-        props.isSelected ?
-          (theme.bg[3] ?? RGBA.fromHex("#2a2e3f"))
+        props.isSelected ? (theme.bg[3] ?? RGBA.fromHex("#2a2e3f"))
+        : isHovered ?
+          hoverBackgroundColor
         : "transparent"
       }
       paddingLeft={1}
@@ -188,12 +194,15 @@ export function RepoItem(props: RepoItemProps) {
       flexDirection="row"
       justifyContent="space-between"
       alignItems="center"
+      onMouseOver={() => setIsHovered(true)}
+      onMouseOut={() => setIsHovered(false)}
     >
       <box flexDirection="row" alignItems="center" flexGrow={1}>
         <text
           attributes={
             props.isSelected ? TextAttributes.BOLD : TextAttributes.NONE
           }
+          truncate={true}
         >
           {repoName}
         </text>

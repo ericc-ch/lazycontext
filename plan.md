@@ -103,11 +103,11 @@ Reference files:
 
 #### Subtasks
 
-- [ ] Style selected item with distinct background/border color from `theme`
-- [ ] Use consistent spacing and typography
-- [ ] Add status icon/indicator next to repo name
-- [ ] Align items in row layout with status on right side
-- [ ] Add hover effect (even without pointer events)
+- [x] Style selected item with distinct background/border color from `theme`
+- [x] Use consistent spacing and typography
+- [x] Add status icon/indicator next to repo name
+- [x] Align items in row layout with status on right side
+- [x] Add hover effect (even without pointer events)
 
 #### Implementation Guide
 

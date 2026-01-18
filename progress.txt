@@ -74,3 +74,36 @@ Next: Begin working on first task.
 - TypeScript type check: ✅ Passed
 - Lint: ✅ Passed (0 warnings, 0 errors)
 - Tests: ✅ Passed (10 pass, 0 fail)
+
+---
+
+## Session: Task 4 (visual styling and layout)
+
+### Tasks completed
+- Completed Task 4: Add visual styling and layout
+- All 5 subtasks implemented:
+  - Added hover effect using onMouseOver/onMouseOut props with subtle background color (theme.bg[2])
+  - Added text truncation with `truncate={true}` for long repo names
+  - Verified existing styling: selected item uses theme.bg[3], status indicator on right side with color + symbol
+  - Confirmed consistent spacing (padding: 1) and typography (bold for selected)
+
+### Decisions made and why
+- Used React useState to track hover state since OpenTUI doesn't have built-in hover props
+- Leveraged BoxRenderable's onMouseOver/onMouseOut event handlers from @opentui/core Renderable class
+- Used theme.bg[2] for hover background to create subtle distinction from selected state
+- Applied truncate prop to text component following patterns from OpenTUI text-truncation-demo
+
+### Blockers encountered
+- None - researched OpenTUI API to find mouse event handlers and truncate prop support
+
+### Files changed
+- src/components/repo-item.tsx:
+  - Added isHovered state with useState
+  - Added onMouseOver and onMouseOut props to main box for hover detection
+  - Added hoverBackgroundColor using theme.bg[2]
+  - Applied truncate={true} to repo name text element for ellipsis on overflow
+
+### Verification
+- TypeScript type check: ✅ Passed
+- Lint: ✅ Passed (0 warnings, 0 errors)
+- Tests: ✅ Passed (10 pass, 0 fail)
