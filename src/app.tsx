@@ -136,7 +136,7 @@ export function App() {
     }
 
     if (match(event, "quit")) {
-      process.exit(0)
+      renderer.destroy()
     }
   }
 
