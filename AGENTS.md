@@ -18,7 +18,7 @@ Fight entropy. Leave the codebase better than you found it.
 
 - **Runtime**: Bun (not Node.js)
 - **Language**: TypeScript
-- **UI Framework**: OpenTUI (Solid.js-based) with `@opentui/core` and `@opentui/solid` — `see docs/opentui.md`
+- **UI Framework**: OpenTUI (React-based) with `@opentui/core` and `@opentui/react`
 - **Effect System**: Use `@effect/platform`, `@effect/platform-bun`, and the `effect` library
 
 ## Code Conventions
@@ -40,7 +40,6 @@ Minimize explicit type annotations; let TypeScript infer types where possible
 import type { SomeType } from "./module" // Type-only imports
 import { Concrete, type SomeType } from "./module" // Mixed imports
 import { TextAttributes } from "@opentui/core" // Use barrel import
-import { render } from "@opentui/solid"
 ```
 
 ### Type Annotations
@@ -64,17 +63,15 @@ import { render } from "@opentui/solid"
 
 When working with OpenTUI:
 
-- Read `docs/opentui.md` for components, hooks, styling, and patterns
 - Explore `.context/opentui/` for reference implementations
+- Explore `.context/opentui/packages/react/` for React-specific patterns and examples
 
 When working with Effect:
 
-- Read `docs/effect.md` for service patterns, error handling, and naming conventions
 - Explore `.context/effect/` for reference implementations
 - Explore `.context/effect-atom/` for effect-atom patterns
 - Read `https://effect.website/llms.txt` for index of Effect documentation
 
-Do not use subagents when reading from `docs/*`
 Use these as authoritative sources for API usage and coding conventions.
 
 ## Testing
@@ -113,12 +110,9 @@ Use these as authoritative sources for API usage and coding conventions.
 
 - Use functional components exclusively; no class components
 - Props interfaces should be named `{ComponentName}Props` and exported when reused
-- Destructure props in component signature; provide default values for optional props
-- Use OpenTUI's composition API: `Slot` for extensibility, `Class` for conditional styling
 - Keep components focused: single responsibility, extract complex logic to custom hooks
 - Custom hooks must use `use` prefix and return typed results (`useCounter`, `useLocalStorage`)
 - Memoize expensive computations with `useMemo` and callbacks with `useCallback`
-- Use `For` and `Show` control flow components instead of array methods and ternary operators
 
 ## File Organization
 
@@ -147,7 +141,6 @@ Use these as authoritative sources for API usage and coding conventions.
 
 ## Priority Order for Documentation
 
-1. First, explore `.context/` directories for reference implementations and patterns
-2. Then, read relevant `docs/*.md` files for API usage and conventions
-3. Only use the documentation tool (Context7) when information is not available in context or docs directories
-4. Use `codesearch` to find real-world code examples from public repositories for implementation patterns and best practices
+1. Explore `.context/` directories for reference implementations and patterns
+2. Only use the documentation tool (Context7) when information is not available in context or docs directories
+3. Use `github_grep` to find real-world code examples from public repositories for implementation patterns and best practices
