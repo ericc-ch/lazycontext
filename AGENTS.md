@@ -69,7 +69,6 @@ When working with OpenTUI:
 When working with Effect:
 
 - Explore `.context/effect/` for reference implementations
-- Explore `.context/effect-atom/` for effect-atom patterns
 - Read `https://effect.website/llms.txt` for index of Effect documentation
 
 Use these as authoritative sources for API usage and coding conventions.
