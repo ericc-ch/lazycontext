@@ -1,12 +1,11 @@
 import { RGBA } from "@opentui/core"
-import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/react"
+import { useKeyboard, useRenderer } from "@opentui/react"
 import { RepoList } from "./components/repo-list"
 import { match } from "./lib/keybinds"
 import { theme } from "./lib/theme"
 
 export function App() {
   const renderer = useRenderer()
-  const dimensions = useTerminalDimensions()
 
   useKeyboard((event) => {
     if (match(event, "toggle-console")) {
@@ -19,13 +18,12 @@ export function App() {
     }
   })
 
-  const bgColor = () => theme.bg[1] ?? RGBA.fromHex("#0f0f14")
-  const isWide = () => dimensions.width >= 100
+  const bgColor = () => theme.bg[0] ?? RGBA.fromHex("#0f0f14")
 
   return (
     <>
       <box
-        flexDirection={isWide() ? "row" : "column"}
+        flexDirection="column"
         width="100%"
         height="100%"
         backgroundColor={bgColor()}
@@ -35,12 +33,7 @@ export function App() {
         paddingBottom={1}
         gap={1}
       >
-        <box
-          flexDirection="column"
-          flexGrow={isWide() ? 1 : 1}
-          flexShrink={isWide() ? 1 : 1}
-          flexBasis={0}
-        >
+        <box flexDirection="column">
           <RepoList />
         </box>
       </box>
