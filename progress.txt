@@ -7,8 +7,32 @@ Next: Begin working on first task.
 
 ---
 
-## Session 2: Task 2 - Refactor add-repo.tsx
+## Session 3: Task 3 - Refactor repo-item.tsx
 
+### Tasks Completed
+- Refactored `src/components/repo-item.tsx` to use React state (`useState`) instead of Effect atoms
+- Removed `@effect-atom/atom` and `@effect-atom/atom-react` imports
+- Removed `Effect`, `Config`, and `parseGithubUrl` imports
+- Removed module-level atoms (`RepoItemEditUrlAtom`, `RepoItemParseErrorAtom`)
+- Replaced `useAtom` hooks with standard `useState` for `editUrl` and `parseError`
+- Replaced `Effect.runPromise(parseGithubUrl(...))` calls with simple regex validation
+- Added `useCallback` for event handlers to fix hook dependency warnings
+
+### Decisions Made
+- Used the same regex pattern as add-repo.tsx for GitHub URL validation (`^https:\/\/github\.com\/[\w-]+\/[\w.-]+\.git$`)
+- Moved atoms to component-local `useState` hooks following the pattern established in add-repo.tsx
+- Replaced `Effect.runPromise` calls with synchronous regex tests
+- Added `useCallback` for `handlePaste`, `handleInput`, and `handleSubmit` to ensure stable references for the `usePaste` hook
+
+### Blockers Encountered
+- None for this task
+
+### Files Changed
+- `src/components/repo-item.tsx` - Complete refactor from Effect atoms to React state
+
+### Verification
+- `bun run typecheck`: Passed with 0 errors
+- `bun run lint`: Passed with 0 warnings
 ### Tasks Completed
 - Refactored `src/components/add-repo.tsx` to use React state (`useState`) instead of Effect atoms
 - Removed `@effect-atom/atom` and `@effect-atom/atom-react` imports

@@ -57,7 +57,7 @@ Reference files:
 - No `@effect-atom` usage
 - No `Effect` usage
 
-### [ ] Task 3: Refactor repo-item.tsx to remove atoms and Effect logic
+### [x] Task 3: Refactor repo-item.tsx to remove atoms and Effect logic
 
 #### Subtasks
 

@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   TextAttributes,
   RGBA,
@@ -6,19 +6,14 @@ import {
   type MouseEvent,
 } from "@opentui/core"
 import { useAppContext } from "@opentui/react"
-import { make } from "@effect-atom/atom/Atom"
-import { Atom, useAtom } from "@effect-atom/atom-react"
-import { Config, type RepoSchema } from "../services/config"
+import type { RepoSchema } from "../services/config"
 import { theme } from "../lib/theme"
-import { parseGithubUrl } from "../lib/url"
-import { Effect } from "effect"
 
 interface PasteEvent {
   text: string
 }
 
-const RepoItemEditUrlAtom = make<string>("")
-const RepoItemParseErrorAtom = make<string | null>(null)
+const GITHUB_URL_REGEX = /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\.git$/
 
 const usePaste = (handler: (event: PasteEvent) => void) => {
   const { keyHandler } = useAppContext()
@@ -44,8 +39,8 @@ export interface RepoItemProps {
 }
 
 export function RepoItem(props: RepoItemProps) {
-  const [editUrl, setEditUrl] = useAtom(RepoItemEditUrlAtom)
-  const [parseError, setParseError] = useAtom(RepoItemParseErrorAtom)
+  const [editUrl, setEditUrl] = useState(props.repo.url ?? "")
+  const [parseError, setParseError] = useState<string | null>(null)
 
   const statusColor = () => {
     switch (props.status) {
@@ -79,32 +74,37 @@ export function RepoItem(props: RepoItemProps) {
     }
   }
 
-  const handlePaste = (event: PasteEvent) => {
-    if (!props.editing) return
-    const pastedText = event.text
-    setEditUrl(pastedText)
-    Effect.runPromise(parseGithubUrl(pastedText))
-      .then(() => setParseError(null))
-      .catch(() => setParseError("Invalid GitHub URL"))
-  }
+  const handlePaste = useCallback(
+    (event: PasteEvent) => {
+      if (!props.editing) return
+      const pastedText = event.text
+      setEditUrl(pastedText)
+      if (GITHUB_URL_REGEX.test(pastedText)) {
+        setParseError(null)
+      } else {
+        setParseError("Invalid GitHub URL")
+      }
+    },
+    [props.editing],
+  )
 
-  const handleInput = (value: string) => {
+  const handleInput = useCallback((value: string) => {
     setEditUrl(value)
     setParseError(null)
-    if (value) {
-      Effect.runPromise(parseGithubUrl(value)).catch(() =>
-        setParseError("Invalid GitHub URL"),
-      )
+    if (value && !GITHUB_URL_REGEX.test(value)) {
+      setParseError("Invalid GitHub URL")
     }
-  }
+  }, [])
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (props.editing && editUrl.trim()) {
-      Effect.runPromise(parseGithubUrl(editUrl))
-        .then(() => props.onSave?.(editUrl))
-        .catch(() => setParseError("Invalid GitHub URL"))
+      if (GITHUB_URL_REGEX.test(editUrl)) {
+        props.onSave?.(editUrl)
+      } else {
+        setParseError("Invalid GitHub URL")
+      }
     }
-  }
+  }, [props.editing, editUrl, props])
 
   const handleKeyDown = (event: KeyEvent) => {
     if (!props.editing) return
@@ -118,10 +118,10 @@ export function RepoItem(props: RepoItemProps) {
   useEffect(() => {
     if (props.editing) {
       setEditUrl(props.repo.url ?? "")
-      if (props.repo.url) {
-        Effect.runPromise(parseGithubUrl(props.repo.url)).catch(() =>
-          setParseError("Invalid GitHub URL"),
-        )
+      if (props.repo.url && !GITHUB_URL_REGEX.test(props.repo.url)) {
+        setParseError("Invalid GitHub URL")
+      } else {
+        setParseError(null)
       }
     }
   }, [props.editing, props.repo.url])
