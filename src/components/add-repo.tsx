@@ -1,10 +1,9 @@
 import { TextAttributes, RGBA } from "@opentui/core"
 import { useState } from "react"
-import { RepoSchema } from "../services/config"
 import { theme } from "../lib/theme"
 
 export interface AddRepoProps {
-  onAdd: (repo: RepoSchema) => void
+  onAdd: (url: string) => void
   onCancel: () => void
 }
 
@@ -33,7 +32,7 @@ export function AddRepo(props: AddRepoProps) {
       return
     }
 
-    props.onAdd(new RepoSchema({ url: inputUrl }))
+    props.onAdd(inputUrl)
     setStatus("success")
     setError(null)
   }
@@ -57,7 +56,7 @@ export function AddRepo(props: AddRepoProps) {
       </box>
 
       <box flexDirection="row" alignItems="center" gap={1} marginTop={1}>
-        <text fg={theme.grays[5] ?? RGBA.fromHex("#888888")}>URL:</text>
+        <text fg={theme.grays[5] ?? RGBA.fromHex("#666666")}>URL:</text>
         <input
           value={url}
           onInput={setUrl}

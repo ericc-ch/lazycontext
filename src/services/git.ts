@@ -1,6 +1,6 @@
 import { Command, CommandExecutor } from "@effect/platform"
 import { Data, Effect } from "effect"
-import type { RepoSchema } from "./config"
+import { parseGithubUrl } from "../lib/url"
 
 export class GitError extends Data.TaggedError("GitError")<{
   readonly message: string
@@ -13,45 +13,48 @@ export class Git extends Effect.Service<Git>()("Git", {
     const executor = yield* CommandExecutor.CommandExecutor
 
     return {
-      clone: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
+      clone: Effect.fn(function* (url: string, targetDir: string) {
+        const { repo: repoName } = yield* parseGithubUrl(url)
         const command = Command.make(
           "git",
           "clone",
           "--quiet",
-          repo.url,
-          `${targetDir}/${repo.name}`,
+          url,
+          `${targetDir}/${repoName}`,
         )
         const result = yield* executor.exitCode(command)
         if (result !== 0) {
           return yield* new GitError({
-            message: `Failed to clone ${repo.url}`,
+            message: `Failed to clone ${url}`,
             exitCode: result,
           })
         }
       }),
 
-      pull: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
+      pull: Effect.fn(function* (url: string, targetDir: string) {
+        const { repo: repoName } = yield* parseGithubUrl(url)
         const command = Command.make(
           "git",
           "-C",
-          `${targetDir}/${repo.name}`,
+          `${targetDir}/${repoName}`,
           "pull",
           "--quiet",
         )
         const result = yield* executor.exitCode(command)
         if (result !== 0) {
           return yield* new GitError({
-            message: `Failed to pull ${repo.url}`,
+            message: `Failed to pull ${url}`,
             exitCode: result,
           })
         }
       }),
 
-      checkStatus: Effect.fn(function* (repo: RepoSchema, targetDir: string) {
+      checkStatus: Effect.fn(function* (url: string, targetDir: string) {
+        const { repo: repoName } = yield* parseGithubUrl(url)
         const dirCommand = Command.make(
           "test",
           "-d",
-          `${targetDir}/${repo.name}`,
+          `${targetDir}/${repoName}`,
         )
         const dirResult = yield* executor.exitCode(dirCommand)
 
@@ -62,7 +65,7 @@ export class Git extends Effect.Service<Git>()("Git", {
         const statusCommand = Command.make(
           "git",
           "-C",
-          `${targetDir}/${repo.name}`,
+          `${targetDir}/${repoName}`,
           "status",
           "--porcelain",
         )

@@ -1,8 +1,11 @@
 import { createRoot } from "@opentui/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { App } from "./app"
 import { renderer } from "./lib/theme"
 import { makeRuntime } from "./runtime"
 import { ProviderRuntime } from "./components/provider-runtime"
+
+const queryClient = new QueryClient()
 
 async function main() {
   const runtime = await makeRuntime()
@@ -11,9 +14,11 @@ async function main() {
   })
 
   createRoot(renderer).render(
-    <ProviderRuntime runtime={runtime}>
-      <App />
-    </ProviderRuntime>,
+    <QueryClientProvider client={queryClient}>
+      <ProviderRuntime runtime={runtime}>
+        <App />
+      </ProviderRuntime>
+    </QueryClientProvider>,
   )
 }
 

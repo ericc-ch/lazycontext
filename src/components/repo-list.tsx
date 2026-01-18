@@ -1,10 +1,9 @@
 import { TextAttributes, RGBA } from "@opentui/core"
-import { RepoSchema } from "../services/config"
 import { theme } from "../lib/theme"
 import { RepoItem } from "./repo-item"
 
 export interface RepoListProps {
-  repos: RepoSchema[]
+  repos: string[]
   statuses: Map<string, "synced" | "modified" | "missing">
   selectedIndex: number
   editingIndex: number | null
@@ -32,11 +31,6 @@ export function RepoList(props: RepoListProps) {
   const counts = statusCounts()
   const syncedCount = counts.synced
   const missingCount = counts.missing
-
-  const editingRepo = () =>
-    props.editingIndex !== null ?
-      new RepoSchema({ url: props.editingUrl, name: undefined })
-    : null
 
   return (
     <box
@@ -73,17 +67,17 @@ export function RepoList(props: RepoListProps) {
       <box flexDirection="column" flexGrow={1}>
         {props.repos.length > 0 || props.editingIndex !== null ?
           <>
-            {props.repos.map((repo, index) => (
+            {props.repos.map((url, index) => (
               <RepoItem
-                repo={repo}
-                status={props.statuses.get(repo.name ?? "") ?? "missing"}
+                url={url}
+                status={props.statuses.get(url) ?? "missing"}
                 selected={index === props.selectedIndex}
                 onClick={() => props.onSelect(index)}
               />
             ))}
-            {editingRepo() !== null ?
+            {props.editingIndex !== null ?
               <RepoItem
-                repo={editingRepo()!}
+                url={props.editingUrl}
                 status="missing"
                 selected={true}
                 editing={true}

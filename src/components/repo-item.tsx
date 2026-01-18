@@ -6,7 +6,6 @@ import {
   type MouseEvent,
 } from "@opentui/core"
 import { useAppContext } from "@opentui/react"
-import type { RepoSchema } from "../services/config"
 import { theme } from "../lib/theme"
 
 interface PasteEvent {
@@ -14,6 +13,13 @@ interface PasteEvent {
 }
 
 const GITHUB_URL_REGEX = /^https:\/\/github\.com\/[\w-]+\/[\w.-]+\.git$/
+
+const getRepoName = (url: string): string => {
+  const match = url.match(
+    /(?:https:\/\/|git@)github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/,
+  )
+  return match?.[2] ?? url
+}
 
 const usePaste = (handler: (event: PasteEvent) => void) => {
   const { keyHandler } = useAppContext()
@@ -28,7 +34,7 @@ const usePaste = (handler: (event: PasteEvent) => void) => {
 }
 
 export interface RepoItemProps {
-  repo: RepoSchema
+  url: string
   status: "synced" | "modified" | "missing"
   lastUpdate?: string
   selected?: boolean
@@ -39,7 +45,7 @@ export interface RepoItemProps {
 }
 
 export function RepoItem(props: RepoItemProps) {
-  const [editUrl, setEditUrl] = useState(props.repo.url ?? "")
+  const [editUrl, setEditUrl] = useState(props.url)
   const [parseError, setParseError] = useState<string | null>(null)
 
   const statusColor = () => {
@@ -117,14 +123,14 @@ export function RepoItem(props: RepoItemProps) {
 
   useEffect(() => {
     if (props.editing) {
-      setEditUrl(props.repo.url ?? "")
-      if (props.repo.url && !GITHUB_URL_REGEX.test(props.repo.url)) {
+      setEditUrl(props.url)
+      if (props.url && !GITHUB_URL_REGEX.test(props.url)) {
         setParseError("Invalid GitHub URL")
       } else {
         setParseError(null)
       }
     }
-  }, [props.editing, props.repo.url])
+  }, [props.editing, props.url])
 
   usePaste(handlePaste)
 
@@ -188,7 +194,7 @@ export function RepoItem(props: RepoItemProps) {
               fg={theme.fg[0] ?? RGBA.fromHex("#FFFFFF")}
               attributes={TextAttributes.BOLD}
             >
-              {props.repo.name}
+              {getRepoName(props.url)}
             </text>
           </box>
           <box flexDirection="row" alignItems="center" gap={2}>

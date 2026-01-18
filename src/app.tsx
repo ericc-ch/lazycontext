@@ -6,29 +6,42 @@ import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
 import { match } from "./lib/keybinds"
 import { theme } from "./lib/theme"
-
-type Repo = {
-  name: string
-  url: string
-}
+import { queryOptions, useQuery } from "@tanstack/react-query"
+import { useRuntime } from "./components/provider-runtime"
+import { Effect } from "effect"
+import { Config } from "./services/config"
 
 type Status = "synced" | "modified" | "missing"
 
-const placeholderRepos: Repo[] = [
-  { name: "effect", url: "https://github.com/Effect-TS/Effect" },
-  { name: "opentui", url: "https://github.com/Effect-TS/OpenTUI" },
+const placeholderRepos: string[] = [
+  "https://github.com/Effect-TS/Effect",
+  "https://github.com/Effect-TS/OpenTUI",
 ]
 
 const placeholderStatuses: Record<string, Status> = {
-  effect: "synced",
-  opentui: "modified",
+  "https://github.com/Effect-TS/Effect": "synced",
+  "https://github.com/Effect-TS/OpenTUI": "modified",
 }
 
 export function App() {
   const renderer = useRenderer()
   const dimensions = useTerminalDimensions()
+  const runtime = useRuntime()
 
-  const [repos, setRepos] = useState<Repo[]>(placeholderRepos)
+  const reposQuery = queryOptions({
+    queryKey: ["repos"] as const,
+    queryFn: async () =>
+      runtime.runPromise(
+        Effect.gen(function* () {
+          const configService = yield* Config
+          const config = yield* configService.load
+          return config.repos
+        }),
+      ),
+  })
+
+  const repos = useQuery(reposQuery)
+
   const [statuses, setStatuses] =
     useState<Record<string, Status>>(placeholderStatuses)
   const [view, setView] = useState<"list" | "add">("list")
@@ -44,34 +57,23 @@ export function App() {
   const handleAddRepo = (url: string) => {
     setView("list")
 
-    const nameMatch = url.match(
-      /(?:https:\/\/|git@)github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/,
-    )
-    if (!nameMatch || !nameMatch[2]) {
-      console.error("Invalid GitHub URL")
-      return
-    }
-
-    const name = nameMatch[2]
-
-    const newRepo: Repo = { name, url }
-    setRepos((prev) => [...prev, newRepo])
-    setStatuses((prev) => ({ ...prev, [name]: "missing" }))
+    setRepos((prev) => [...prev, url])
+    setStatuses((prev) => ({ ...prev, [url]: "missing" }))
   }
 
   const handleSyncRepo = () => {
-    const repo = repos[selectedIndex]
-    if (!repo || !repo.name) return
+    const url = repos[selectedIndex]
+    if (!url) return
 
     setStatuses((prev) => {
       const newStatuses = { ...prev }
-      const currentStatus = newStatuses[repo.name]
+      const currentStatus = newStatuses[url]
       if (currentStatus === "missing") {
-        newStatuses[repo.name] = "synced"
+        newStatuses[url] = "synced"
       } else if (currentStatus === "synced") {
-        newStatuses[repo.name] = "modified"
+        newStatuses[url] = "modified"
       } else {
-        newStatuses[repo.name] = "synced"
+        newStatuses[url] = "synced"
       }
       return newStatuses
     })
@@ -82,14 +84,8 @@ export function App() {
 
     setStatuses((prev) => {
       const newStatuses = { ...prev }
-      for (const repo of repos) {
-        if (!repo.name) continue
-        const currentStatus = newStatuses[repo.name]
-        if (currentStatus === "missing") {
-          newStatuses[repo.name] = "synced"
-        } else {
-          newStatuses[repo.name] = "synced"
-        }
+      for (const url of repos) {
+        newStatuses[url] = "synced"
       }
       return newStatuses
     })

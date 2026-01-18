@@ -9,17 +9,17 @@ const githubUrlRegex = regex(
   "(?:https://|git@)github\\.com[/:](?<owner>[^/]+)/(?<repo>[^/]+?)(?:\\.git)?$",
 )
 
-export function parseGithubUrl(
-  url: string,
-): Effect.Effect<{ owner: string; repo: string }, UrlError> {
+export const parseGithubUrl = Effect.fn(function* (url: string) {
   const match = url.match(githubUrlRegex)
   if (!match || !match.groups) {
-    return Effect.fail(new UrlError({ message: `Invalid GitHub URL: ${url}` }))
+    return yield* new UrlError({ message: `Invalid GitHub URL: ${url}` })
   }
+
   const owner = match.groups.owner
   const repo = match.groups.repo
   if (owner === undefined || repo === undefined) {
-    return Effect.fail(new UrlError({ message: `Invalid GitHub URL: ${url}` }))
+    return yield* new UrlError({ message: `Invalid GitHub URL: ${url}` })
   }
-  return Effect.succeed({ owner, repo })
-}
+
+  return { owner, repo }
+})

@@ -1,14 +1,8 @@
 import { FileSystem, Path } from "@effect/platform"
 import { Data, Effect, Schema } from "effect"
-import { parseGithubUrl } from "../lib/url"
-
-export class RepoSchema extends Schema.Class<RepoSchema>("RepoSchema")({
-  name: Schema.String.pipe(Schema.optional),
-  url: Schema.String,
-}) {}
 
 export class ConfigSchema extends Schema.Class<ConfigSchema>("ConfigSchema")({
-  repos: Schema.Array(RepoSchema),
+  repos: Schema.Array(Schema.String),
 }) {}
 
 export class ConfigError extends Data.TaggedError("ConfigError")<{
@@ -34,15 +28,19 @@ export class Config extends Effect.Service<Config>()("Config", {
     })
 
     const readConfigFile = Effect.gen(function* () {
-      const fullPath = path.join(cwd, configPath)
-      const exists = yield* fs.exists(fullPath)
+      const exists = yield* fs.exists(configPath)
+
       if (!exists) {
-        yield* Effect.log("Config file not found, returning default config")
+        yield* Effect.log(
+          "Config file not found at",
+          configPath,
+          ", returning default config",
+        )
         return defaultConfig
       }
 
-      const content = yield* fs.readFileString(fullPath)
-      yield* Effect.log("Config file found, content:", content)
+      const content = yield* fs.readFileString(configPath)
+      yield* Effect.log("Config file found at", configPath)
 
       return yield* Schema.decodeUnknown(JsonSchema)(content)
     })
@@ -54,16 +52,14 @@ export class Config extends Effect.Service<Config>()("Config", {
       }),
 
       addRepo: Effect.fn(function* (url: string) {
-        const { repo } = yield* parseGithubUrl(url)
         const config = yield* readConfigFile
 
-        const existingUrls = new Set(config.repos.map((r) => r.url))
-        if (existingUrls.has(url)) {
+        if (config.repos.includes(url)) {
           return config
         }
 
         const newConfig = new ConfigSchema({
-          repos: [...config.repos, new RepoSchema({ name: repo, url })],
+          repos: [...config.repos, url],
         })
         const content = yield* Schema.encode(JsonSchema)(newConfig)
         yield* ensureDirExists
@@ -72,13 +68,13 @@ export class Config extends Effect.Service<Config>()("Config", {
         return newConfig
       }),
 
-      removeRepo: Effect.fn(function* (name: string) {
+      removeRepo: Effect.fn(function* (url: string) {
         const config = yield* readConfigFile
 
-        const filtered = config.repos.filter((repo) => repo.name !== name)
+        const filtered = config.repos.filter((repoUrl) => repoUrl !== url)
         if (filtered.length === config.repos.length) {
           return yield* new ConfigError({
-            message: `Repository ${name} not found`,
+            message: `Repository ${url} not found`,
           })
         }
 
