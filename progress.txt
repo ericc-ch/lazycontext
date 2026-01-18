@@ -6,3 +6,29 @@ Project initialized with Ralph workflow.
 Next: Begin working on first task.
 
 ---
+
+## Session 1: Task 1 - Refactor app.tsx
+
+### Tasks Completed
+- Refactored `src/app.tsx` to use React state (`useState`) instead of Effect atoms
+- Removed all `@effect-atom/atom-react` imports
+- Removed `Config` and `Git` service imports
+- Removed all `serverRuntime.runPromise` calls
+- Implemented placeholder data for repos and statuses
+- Implemented dummy `loadConfig`, `handleAddRepo`, `handleSyncRepo`, and `handleSyncAll` functions
+
+### Decisions Made
+- Defined `Repo` and `Status` types locally in app.tsx for clarity
+- Used `Record<string, Status>` instead of `Map` for statuses state
+- Converted to `Map` only when passing to `RepoList` component (which expects Map)
+- Implemented simple URL parsing using regex instead of Effect-based `parseGithubUrl`
+- Placeholder repos: "effect" and "opentui" with "synced" and "modified" statuses
+
+### Blockers Encountered
+- None for this task
+
+### Files Changed
+- `src/app.tsx` - Complete refactor from Effect atoms to React state
+
+---
+

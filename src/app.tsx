@@ -1,174 +1,98 @@
-import { useAtom, useAtomValue } from "@effect-atom/atom-react"
 import { RGBA, type KeyEvent } from "@opentui/core"
 import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { CommandLog } from "./components/command-log"
 import { RepoList } from "./components/repo-list"
 import { StatusBar } from "./components/status-bar"
 import { match } from "./lib/keybinds"
 import { theme } from "./lib/theme"
-import { Config } from "./services/config"
-import { Git } from "./services/git"
 
-const targetDir = ".context"
+type Repo = {
+  name: string
+  url: string
+}
+
+type Status = "synced" | "modified" | "missing"
+
+const placeholderRepos: Repo[] = [
+  { name: "effect", url: "https://github.com/Effect-TS/Effect" },
+  { name: "opentui", url: "https://github.com/Effect-TS/OpenTUI" },
+]
+
+const placeholderStatuses: Record<string, Status> = {
+  effect: "synced",
+  opentui: "modified",
+}
 
 export function App() {
   const renderer = useRenderer()
   const dimensions = useTerminalDimensions()
 
-  const config = useAtomValue(configAtom)
+  const [repos, setRepos] = useState<Repo[]>(placeholderRepos)
+  const [statuses, setStatuses] =
+    useState<Record<string, Status>>(placeholderStatuses)
+  const [view, setView] = useState<"list" | "add">("list")
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editingUrl, setEditingUrl] = useState("")
 
-  console.log(config)
-
-  const [repos, setRepos] = useAtom(reposAtom)
-  const [statuses, setStatuses] = useAtom(statusesAtom)
-  const [view, setView] = useAtom(viewAtom)
-  const [selectedIndex, setSelectedIndex] = useAtom(selectedIndexAtom)
-  const [editingIndex, setEditingIndex] = useAtom(editingIndexAtom)
-  const [editingUrl, setEditingUrl] = useAtom(editingUrlAtom)
-
-  const loadConfig = async () => {
-    try {
-      const config = await serverRuntime.runPromise(Config.load())
-      setRepos([...config.repos])
-      await checkAllStatuses()
-    } catch (error: unknown) {
-      console.error(
-        "Failed to load config",
-        error instanceof Error ? error.message : "Unknown error",
-      )
-    }
+  const loadConfig = () => {
+    setRepos([...placeholderRepos])
+    setStatuses({ ...placeholderStatuses })
   }
 
-  const checkAllStatuses = async () => {
-    const currentRepos = repos
-    const statusesMap = new Map<string, Status>()
-
-    for (const repo of currentRepos) {
-      if (!repo.name) continue
-      try {
-        const status = await serverRuntime.runPromise(
-          Git.checkStatus(repo, targetDir),
-        )
-        statusesMap.set(repo.name, status)
-      } catch (error: unknown) {
-        console.error(
-          `Failed to check status for ${repo.name}`,
-          error instanceof Error ? error.message : "Unknown error",
-        )
-        statusesMap.set(repo.name, "missing")
-      }
-    }
-
-    setStatuses(statusesMap)
-  }
-
-  const handleAddRepo = async (url: string) => {
+  const handleAddRepo = (url: string) => {
     setView("list")
 
-    try {
-      const config = await serverRuntime.runPromise(Config.addRepo(url))
-
-      setRepos([...config.repos])
-
-      const newRepo = config.repos.find((r) => r.url === url)
-      if (newRepo && newRepo.name) {
-        await serverRuntime.runPromise(Git.clone(newRepo, targetDir))
-
-        const status = await serverRuntime.runPromise(
-          Git.checkStatus(newRepo, targetDir),
-        )
-
-        setStatuses((prev) => {
-          const newStatuses = new Map(prev)
-          newStatuses.set(newRepo.name!, status)
-          return newStatuses
-        })
-      }
-    } catch (error: unknown) {
-      console.error(
-        "Failed to add repository",
-        error instanceof Error ? error.message : "Unknown error",
-      )
+    const nameMatch = url.match(
+      /(?:https:\/\/|git@)github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/,
+    )
+    if (!nameMatch || !nameMatch[2]) {
+      console.error("Invalid GitHub URL")
+      return
     }
+
+    const name = nameMatch[2]
+
+    const newRepo: Repo = { name, url }
+    setRepos((prev) => [...prev, newRepo])
+    setStatuses((prev) => ({ ...prev, [name]: "missing" }))
   }
 
-  const handleSyncRepo = async () => {
+  const handleSyncRepo = () => {
     const repo = repos[selectedIndex]
     if (!repo || !repo.name) return
 
-    try {
-      const statusesMap = new Map(statuses)
-      const currentStatus = statusesMap.get(repo.name)
-
+    setStatuses((prev) => {
+      const newStatuses = { ...prev }
+      const currentStatus = newStatuses[repo.name]
       if (currentStatus === "missing") {
-        await serverRuntime.runPromise(Git.clone(repo, targetDir))
+        newStatuses[repo.name] = "synced"
+      } else if (currentStatus === "synced") {
+        newStatuses[repo.name] = "modified"
       } else {
-        await serverRuntime.runPromise(Git.pull(repo, targetDir))
+        newStatuses[repo.name] = "synced"
       }
-
-      const newStatus = await serverRuntime.runPromise(
-        Git.checkStatus(repo, targetDir),
-      )
-
-      statusesMap.set(repo.name, newStatus)
-      setStatuses(statusesMap)
-    } catch (error: unknown) {
-      console.error(
-        `Failed to sync ${repo.name}`,
-        error instanceof Error ? error.message : "Unknown error",
-      )
-    }
+      return newStatuses
+    })
   }
 
-  const handleSyncAll = async () => {
+  const handleSyncAll = () => {
     if (repos.length === 0) return
 
-    try {
-      const statusesMap = new Map(statuses)
-      let syncedCount = 0
-      let failedCount = 0
-
+    setStatuses((prev) => {
+      const newStatuses = { ...prev }
       for (const repo of repos) {
         if (!repo.name) continue
-
-        try {
-          const currentStatus = statusesMap.get(repo.name)
-
-          if (currentStatus === "missing") {
-            await serverRuntime.runPromise(Git.clone(repo, targetDir))
-          } else {
-            await serverRuntime.runPromise(Git.pull(repo, targetDir))
-          }
-
-          const newStatus = await serverRuntime.runPromise(
-            Git.checkStatus(repo, targetDir),
-          )
-          statusesMap.set(repo.name, newStatus)
-          syncedCount++
-        } catch (error: unknown) {
-          console.error(
-            `Failed to sync ${repo.name}`,
-            error instanceof Error ? error.message : "Unknown error",
-          )
-          statusesMap.set(repo.name, "missing")
-          failedCount++
+        const currentStatus = newStatuses[repo.name]
+        if (currentStatus === "missing") {
+          newStatuses[repo.name] = "synced"
+        } else {
+          newStatuses[repo.name] = "synced"
         }
       }
-
-      setStatuses(statusesMap)
-
-      if (syncedCount > 0 || failedCount > 0) {
-        console.log(
-          `Sync complete: ${syncedCount} synced, ${failedCount} failed`,
-        )
-      }
-    } catch (error: unknown) {
-      console.error(
-        "Failed to sync repositories",
-        error instanceof Error ? error.message : "Unknown error",
-      )
-    }
+      return newStatuses
+    })
   }
 
   const handleSelect = (index: number) => {
@@ -197,12 +121,12 @@ export function App() {
     }
 
     if (match(event, "repo-sync") && view === "list") {
-      void handleSyncRepo()
+      handleSyncRepo()
       return
     }
 
     if (match(event, "repo-sync-all") && view === "list") {
-      void handleSyncAll()
+      handleSyncAll()
       return
     }
 
@@ -217,13 +141,15 @@ export function App() {
   }
 
   useEffect(() => {
-    void loadConfig()
+    loadConfig()
   }, [])
 
   useKeyboard(handleKeyboard)
 
   const bgColor = () => theme.bg[1] ?? RGBA.fromHex("#0f0f14")
   const isWide = () => dimensions.width >= 100
+
+  const statusesMap = new Map(Object.entries(statuses))
 
   return (
     <>
@@ -247,7 +173,7 @@ export function App() {
           {view === "list" && (
             <RepoList
               repos={repos}
-              statuses={statuses}
+              statuses={statusesMap}
               selectedIndex={selectedIndex}
               editingIndex={editingIndex}
               editingUrl={editingUrl}
