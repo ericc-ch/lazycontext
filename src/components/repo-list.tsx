@@ -6,12 +6,15 @@ import { useEffect, useState } from "react"
 import { match } from "../lib/keybinds"
 import { theme } from "../lib/theme"
 import { Config } from "../services/config"
+import { Git } from "../services/git"
 import { useRuntime } from "./provider-runtime"
-import { RepoItem } from "./repo-item"
+import { RepoItem, type RepoStatus } from "./repo-item"
 
 export function RepoList() {
   const runtime = useRuntime()
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [syncingUrl, setSyncingUrl] = useState<string | null>(null)
+  const [syncType, setSyncType] = useState<"clone" | "pull" | null>(null)
 
   const reposQuery = queryOptions({
     queryKey: ["repos"] as const,
@@ -31,6 +34,31 @@ export function RepoList() {
     }
   }, [repos.data])
 
+  const handleSync = async (url: string, currentStatus: RepoStatus) => {
+    if (syncingUrl) return
+
+    const type = currentStatus === "missing" ? "clone" : "pull"
+    setSyncingUrl(url)
+    setSyncType(type)
+
+    try {
+      const targetDir = `${process.cwd()}/.context`
+      const effect = Effect.gen(function* () {
+        const git = yield* Git
+        if (type === "clone") {
+          yield* git.clone(url, targetDir)
+        } else {
+          yield* git.pull(url, targetDir)
+        }
+      })
+      await runtime.runPromise(effect)
+    } catch {
+    } finally {
+      setSyncingUrl(null)
+      setSyncType(null)
+    }
+  }
+
   useKeyboard((event) => {
     if (!repos.data?.length) {
       return
@@ -44,6 +72,13 @@ export function RepoList() {
     if (match(event, "navigate-up")) {
       setSelectedIndex((prev) => Math.max(prev - 1, 0))
       return
+    }
+
+    if (match(event, "repo-sync")) {
+      const selectedUrl = repos.data[selectedIndex]
+      if (selectedUrl) {
+        void handleSync(selectedUrl, "synced")
+      }
     }
   })
 
@@ -76,6 +111,8 @@ export function RepoList() {
             url={url}
             isSelected={index === selectedIndex}
             onSelect={() => setSelectedIndex(index)}
+            syncing={syncingUrl === url}
+            syncType={syncType}
           />
         ))}
       </box>

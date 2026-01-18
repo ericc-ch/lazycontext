@@ -73,11 +73,11 @@ Reference files:
 
 #### Subtasks
 
-- [ ] Create `useSyncRepo` hook using `useMutation` for clone/pull operations
-- [ ] Invalidate `["repo-status", url]` cache after successful sync
-- [ ] Handle `repo-sync` keybinding (Enter) when item is selected
-- [ ] Show syncing state during mutation (disable interactions)
-- [ ] Display success/error feedback briefly after operation
+- [x] Create `useSyncRepo` hook using `useMutation` for clone/pull operations
+- [x] Invalidate `["repo-status", url]` cache after successful sync
+- [x] Handle `repo-sync` keybinding (Enter) when item is selected
+- [x] Show syncing state during mutation (disable interactions)
+- [x] Display success/error feedback briefly after operation
 
 #### Implementation Guide
 

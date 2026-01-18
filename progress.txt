@@ -30,3 +30,47 @@ Next: Begin working on first task.
 - TypeScript type check: ✅ Passed
 - Lint: ✅ Passed (1 warning, 0 errors)
 - Tests: ✅ Passed (10 pass, 0 fail)
+
+---
+
+## Session: Task 3 (clone/pull mutations with keyboard shortcuts)
+
+### Tasks completed
+- Completed Task 3: Implement clone/pull mutations with keyboard shortcuts
+- All 5 subtasks implemented:
+  - Created `useSyncRepo` hook using `useMutation` for clone/pull operations
+  - Added cache invalidation for `["repo-status", url]` after successful sync
+  - Implemented `repo-sync` keybinding (Enter) handling in RepoList keyboard handler
+  - Added syncing state display with "Cloning..." / "Pulling..." text
+  - Added syncing prop to RepoItem to disable interactions during mutation
+
+### Decisions made and why
+- Used Effect.runPromise instead of runSync for async git operations to properly handle Effect's error channel
+- Used `void` keyword for Promise-returning functions to satisfy lint (invalidateQueries and handleSync)
+- Created new RegExp object for URL parsing to fix lint warning about escape characters
+- Added "syncing" status type to RepoStatus union for proper type safety
+- Used syncingUrl state in RepoList to track which repo is being synced, passed to RepoItem for visual feedback
+
+### Blockers encountered
+- Initial implementation had duplicate try-catch blocks causing syntax errors - fixed by rewriting the file
+- Had to refactor handleSync from using runtime.runSync to Effect.runPromise pattern to properly use yield*
+
+### Files changed
+- src/components/repo-item.tsx:
+  - Added useSyncRepo hook with useMutation for clone/pull operations
+  - Added syncing status type and getStatusColor/getStatusText support
+  - Added syncing, syncType, onSync props to RepoItemProps
+  - Updated RepoItem to handle syncing state
+  - Fixed URL regex using new RegExp to avoid lint warning
+
+- src/components/repo-list.tsx:
+  - Added Git import and RepoStatus type import
+  - Added syncingUrl and syncType state
+  - Added handleSync function with Effect pattern
+  - Added repo-sync keybinding handling in useKeyboard
+  - Passed syncing and syncType props to RepoItem
+
+### Verification
+- TypeScript type check: ✅ Passed
+- Lint: ✅ Passed (0 warnings, 0 errors)
+- Tests: ✅ Passed (10 pass, 0 fail)

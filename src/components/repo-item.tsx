@@ -1,10 +1,21 @@
 import { RGBA, TextAttributes } from "@opentui/core"
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { Effect } from "effect"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useRuntime } from "./provider-runtime"
 
-export type RepoStatus = "synced" | "modified" | "missing" | "loading" | "error"
+export type RepoStatus =
+  | "synced"
+  | "modified"
+  | "missing"
+  | "loading"
+  | "syncing"
+  | "error"
 
 const TARGET_DIR = `${process.cwd()}/.context`
 
@@ -28,6 +39,45 @@ export function useRepoStatus(url: string) {
   return useQuery(query)
 }
 
+export function useSyncRepo() {
+  const runtime = useRuntime()
+  const queryClient = useQueryClient()
+  const [syncType, setSyncType] = useState<"clone" | "pull" | null>(null)
+
+  const mutation = useMutation({
+    mutationFn: async ({
+      url,
+      type,
+    }: {
+      url: string
+      type: "clone" | "pull"
+    }) => {
+      const targetDir = getTargetDir()
+      const git = runtime.runSync(Git)
+      if (type === "clone") {
+        return git.clone(url, targetDir)
+      } else {
+        return git.pull(url, targetDir)
+      }
+    },
+    onSuccess: (_, { url }) => {
+      void queryClient.invalidateQueries({ queryKey: ["repo-status", url] })
+      setSyncType(null)
+    },
+    onError: () => {
+      setSyncType(null)
+    },
+  })
+
+  const sync = (url: string, currentStatus: RepoStatus) => {
+    const type = currentStatus === "missing" ? "clone" : "pull"
+    setSyncType(type)
+    mutation.mutate({ url, type })
+  }
+
+  return { sync, isSyncing: mutation.isPending, syncType }
+}
+
 import { Git } from "../services/git"
 import { theme } from "../lib/theme"
 
@@ -35,6 +85,9 @@ export interface RepoItemProps {
   url: string
   isSelected: boolean
   onSelect: () => void
+  syncing?: boolean
+  syncType?: "clone" | "pull" | null
+  onSync?: () => void
 }
 
 function getStatusColor(status: RepoStatus): RGBA {
@@ -47,6 +100,8 @@ function getStatusColor(status: RepoStatus): RGBA {
       return theme.error[0] ?? RGBA.fromHex("#ff0000")
     case "loading":
       return theme.grays[0] ?? RGBA.fromHex("#888888")
+    case "syncing":
+      return theme.info[0] ?? RGBA.fromHex("#00AAFF")
     case "error":
       return theme.error[0] ?? RGBA.fromHex("#ff0000")
     default:
@@ -64,6 +119,8 @@ function getStatusIcon(status: RepoStatus): string {
       return "✗"
     case "loading":
       return "◐"
+    case "syncing":
+      return "◐"
     case "error":
       return "!"
     default:
@@ -71,7 +128,10 @@ function getStatusIcon(status: RepoStatus): string {
   }
 }
 
-function getStatusText(status: RepoStatus): string {
+function getStatusText(
+  status: RepoStatus,
+  syncType: "clone" | "pull" | null,
+): string {
   switch (status) {
     case "synced":
       return "synced"
@@ -81,6 +141,8 @@ function getStatusText(status: RepoStatus): string {
       return "missing"
     case "loading":
       return "loading..."
+    case "syncing":
+      return syncType === "clone" ? "Cloning..." : "Pulling..."
     case "error":
       return "error"
     default:
@@ -90,7 +152,10 @@ function getStatusText(status: RepoStatus): string {
 
 export function RepoItem(props: RepoItemProps) {
   const statusQuery = useRepoStatus(props.url)
-  const status: RepoStatus = useMemo(() => {
+  const effectiveStatus: RepoStatus = useMemo(() => {
+    if (props.syncing) {
+      return "syncing"
+    }
     if (statusQuery.isLoading) {
       return "loading"
     }
@@ -98,16 +163,16 @@ export function RepoItem(props: RepoItemProps) {
       return "error"
     }
     return statusQuery.data ?? "loading"
-  }, [statusQuery])
+  }, [statusQuery, props.syncing])
 
   const repoName = useMemo(() => {
     const match = parseGithubUrlSync(props.url)
     return match?.repo ?? props.url
   }, [props.url])
 
-  const statusColor = getStatusColor(status)
-  const statusIcon = getStatusIcon(status)
-  const statusText = getStatusText(status)
+  const statusColor = getStatusColor(effectiveStatus)
+  const statusIcon = getStatusIcon(effectiveStatus)
+  const statusText = getStatusText(effectiveStatus, props.syncType ?? null)
 
   return (
     <box
@@ -150,8 +215,9 @@ export function RepoItem(props: RepoItemProps) {
 function parseGithubUrlSync(
   url: string,
 ): { owner: string; repo: string } | null {
-  const githubUrlRegex =
-    /(?:https:\/|git@)github\.com[\/:](?<owner>[^/]+)\/(?<repo>[^/]+?)(?:\.git)?$/
+  const githubUrlRegex = new RegExp(
+    "(?:https:\\/|git@)github\\.com[\\/:](?<owner>[^/]+)\\/(?<repo>[^/]+?)(?:\\.git)?$",
+  )
   const match = url.match(githubUrlRegex)
   if (!match || !match.groups) {
     return null
