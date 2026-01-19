@@ -65,7 +65,7 @@ describe("Git", () => {
       try {
         await runWithGit(program, mockExecutor, mockPath)
         expect(true).toBe(false)
-      } catch (error: any) {
+      } catch (error: unknown) {
         expect(error.toString()).toContain("GitError")
         expect(error.toString()).toContain("Failed to clone")
       }
@@ -109,7 +109,7 @@ describe("Git", () => {
       try {
         await runWithGit(program, mockExecutor, mockPath)
         expect(true).toBe(false)
-      } catch (error: any) {
+      } catch (error: unknown) {
         expect(error.toString()).toContain("GitError")
         expect(error.toString()).toContain("Failed to pull")
       }
