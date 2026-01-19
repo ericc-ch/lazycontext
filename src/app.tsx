@@ -43,7 +43,7 @@ export function App() {
     <Layout
       header={<AppHeader />}
       footer={
-        <box border={true} paddingTop={1}>
+        <box border={true}>
           <KeybindBar />
         </box>
       }

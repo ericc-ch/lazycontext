@@ -23,13 +23,22 @@ export function Layout(props: LayoutProps) {
           flexDirection="column"
           paddingLeft={1}
           paddingRight={1}
-          paddingTop={1}
+          paddingTop={2}
           paddingBottom={1}
         >
           {props.header}
         </box>
       )}
-      <box flexDirection="column" flexGrow={1} overflow="hidden" border={true}>
+      <box
+        flexDirection="column"
+        flexGrow={1}
+        overflow="hidden"
+        border={true}
+        paddingTop={1}
+        paddingBottom={1}
+        paddingLeft={1}
+        paddingRight={1}
+      >
         {props.children}
       </box>
       {props.footer && (
@@ -39,7 +48,7 @@ export function Layout(props: LayoutProps) {
           paddingLeft={1}
           paddingRight={1}
           paddingTop={1}
-          paddingBottom={1}
+          paddingBottom={2}
         >
           {props.footer}
         </box>

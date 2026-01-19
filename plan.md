@@ -63,5 +63,5 @@
 - Goal: Add final touches to spacing and borders.
 - Key Deliverables:
   - [x] **Borders & Separators**: Add box-drawing borders around the main list or header to frame the content.
-  - [ ] **Padding & Margins**: Tune the whitespace between items and container edges.
+  - [x] **Padding & Margins**: Tune the whitespace between items and container edges.
   - [ ] **Loading States**: Improve the visual feedback for loading/syncing (e.g., better spinner or progress text).
