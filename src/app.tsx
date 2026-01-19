@@ -1,6 +1,29 @@
 import { useKeyboard, useRenderer } from "@opentui/react"
+import { RGBA, TextAttributes } from "@opentui/core"
 import { RepoList } from "./components/repo-list"
+import { Layout } from "./components/layout"
+import { KeybindBar } from "./components/keybind-bar"
 import { match } from "./lib/keybinds"
+import { useTheme } from "./components/provider-theme"
+
+function AppHeader() {
+  const theme = useTheme()
+
+  return (
+    <box flexDirection="column">
+      <text
+        fg={theme.primary[0] ?? RGBA.fromHex("#00ffff")}
+        attributes={TextAttributes.BOLD}
+        truncate={true}
+      >
+        LazyContext
+      </text>
+      <text fg={theme.grays[0] ?? RGBA.fromHex("#888888")} truncate={true}>
+        Git repository manager
+      </text>
+    </box>
+  )
+}
 
 export function App() {
   const renderer = useRenderer()
@@ -17,19 +40,15 @@ export function App() {
   })
 
   return (
-    <>
-      <box
-        flexDirection="column"
-        width="100%"
-        height="100%"
-        paddingLeft={1}
-        paddingRight={1}
-        paddingTop={1}
-        paddingBottom={1}
-        gap={1}
-      >
-        <RepoList />
-      </box>
-    </>
+    <Layout
+      header={<AppHeader />}
+      footer={
+        <box border={true} paddingTop={1}>
+          <KeybindBar />
+        </box>
+      }
+    >
+      <RepoList />
+    </Layout>
   )
 }
