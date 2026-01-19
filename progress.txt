@@ -79,3 +79,20 @@ Next: Begin working on first task.
 
 ### Files changed
 - `src/app.tsx` - Removed backgroundColor prop, removed unused useTheme import and theme const
+
+---
+
+## Session 5
+
+### Tasks completed in this session
+- Fixed highlighting in `src/components/repo-item.tsx`: Changed from using terminal-dependent `theme.bg[3]` to a fixed highlight color `#334455` that provides clear visibility against any terminal background
+
+### Decisions made and why
+- Used fixed color `#334455` for highlighting: The previous implementation used `theme.bg[3]` which was calculated from the terminal background color. This could result in poor contrast on dark terminals (light gray on dark gray). The new blue-gray color `#334455` provides consistent, clear highlighting on both dark and light terminal backgrounds.
+- Added padding to the main box element: Added `paddingLeft={1} paddingRight={1}` to match the visual spacing pattern used in other OpenTUI examples and provide better visual separation.
+
+### Blockers encountered
+- None significant; TypeScript initially complained about `null` values for backgroundColor, which was resolved by using the string "transparent" instead.
+
+### Files changed
+- `src/components/repo-item.tsx` - Changed highlight color to fixed `#334455`, added horizontal padding

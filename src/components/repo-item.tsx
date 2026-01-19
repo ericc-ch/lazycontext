@@ -171,8 +171,11 @@ export function RepoItem(props: RepoItemProps) {
     : undefined
   const statusText = config.text(syncType, commitCount)
 
+  const highlightColor =
+    props.isHighlighted ? RGBA.fromHex("#334455") : "transparent"
+
   return (
-    <box backgroundColor={props.isHighlighted ? theme.bg[3] : "transparent"}>
+    <box backgroundColor={highlightColor} paddingLeft={1} paddingRight={1}>
       <box flexDirection="row" alignItems="center" flexGrow={1}>
         <text
           attributes={
