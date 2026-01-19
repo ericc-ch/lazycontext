@@ -43,3 +43,21 @@ Next: Begin working on first task.
 
 ### Files changed
 - `src/lib/keybinds.ts` - Updated key mappings for repo-sync and repo-sync-all
+
+---
+
+## Session 3
+
+### Tasks completed in this session
+- Implemented "Sync All" feature in `src/components/repo-list.tsx`: Added keyboard handler for "repo-sync-all" action that iterates over all repositories and triggers clone or pull based on each repo's status
+
+### Decisions made and why
+- Used `isRepoStatus` type guard to differentiate between RepoStatus objects and other types: Matches the pattern already established in repo-item.tsx
+- Used fire-and-forget pattern with `void` for sync operations: Sync operations can take time, blocking the UI would provide poor user experience; this allows the user to continue navigating while syncs run in background
+- Iterated synchronously through repos and triggered parallel sync operations: Each repo sync runs independently, maximizing throughput while keeping the implementation simple
+
+### Blockers encountered
+- None significant; initial Effect handling required understanding the Effect runtime pattern, which was resolved by examining existing code patterns in repo-item.tsx
+
+### Files changed
+- `src/components/repo-list.tsx` - Added "repo-sync-all" keyboard handler, isRepoStatus type guard function

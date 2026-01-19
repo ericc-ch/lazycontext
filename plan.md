@@ -63,8 +63,8 @@
 - Goal: Implement requested keybinds and sync logic.
 - Key Deliverables:
   - [x] **Keybind Config**: Update `src/lib/keybinds.ts` (Sync=`s`, SyncAll=`S`).
-  - [ ] **Sync One**: Update `RepoItem` to respond to the new keybind.
-  - [ ] **Sync All**: Implement `S` handler in `RepoList` to trigger sync for all listed repositories.
+  - [x] **Sync One**: Update `RepoItem` to respond to the new keybind.
+  - [x] **Sync All**: Implement `S` handler in `RepoList` to trigger sync for all listed repositories.
 
 ### Phase 3: Visual Polish
 

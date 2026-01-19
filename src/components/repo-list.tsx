@@ -5,9 +5,14 @@ import { Effect } from "effect"
 import { useEffect, useState } from "react"
 import { match } from "../lib/keybinds"
 import { Config } from "../services/config"
+import { Git, type RepoStatus } from "../services/git"
 import { useRuntime } from "./provider-runtime"
 import { useTheme } from "./provider-theme"
 import { RepoItem } from "./repo-item"
+
+function isRepoStatus(status: unknown): status is RepoStatus {
+  return typeof status === "object" && status !== null && "state" in status
+}
 
 export function RepoList() {
   const runtime = useRuntime()
@@ -44,6 +49,19 @@ export function RepoList() {
 
     if (match(event, "navigate-up")) {
       setSelectedIndex((prev) => Math.max(prev - 1, 0))
+      return
+    }
+
+    if (match(event, "repo-sync-all")) {
+      for (const url of repos.data) {
+        const git = runtime.runSync(Git)
+        const status = git.checkStatus(url).pipe(runtime.runPromise)
+        if (isRepoStatus(status) && status.state === "missing") {
+          void git.clone(url).pipe(runtime.runPromise)
+        } else {
+          void git.pull(url).pipe(runtime.runPromise)
+        }
+      }
       return
     }
   })
