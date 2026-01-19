@@ -1,4 +1,5 @@
 import { RGBA, TextAttributes } from "@opentui/core"
+import { useKeyboard } from "@opentui/react"
 import {
   queryOptions,
   useMutation,
@@ -7,42 +8,99 @@ import {
 } from "@tanstack/react-query"
 import { Effect } from "effect"
 import { useMemo, useState } from "react"
+import { match } from "../lib/keybinds"
+import { Git, type RepoStatus } from "../services/git"
 import { useRuntime } from "./provider-runtime"
+import { useTheme, type Theme } from "./provider-theme"
 
-export type RepoStatus =
-  | "synced"
-  | "modified"
-  | "missing"
-  | "loading"
-  | "syncing"
-  | "error"
+type UiStatus = "loading" | "syncing" | "error"
 
-const TARGET_DIR = `${process.cwd()}/.context`
-
-function getTargetDir() {
-  return TARGET_DIR
+export interface RepoItemProps {
+  url: string
+  isHighlighted: boolean
 }
 
-export function useRepoStatus(url: string) {
+type StatusConfig = {
+  color: (theme: Theme) => RGBA
+  icon: string
+  text: (syncType: "clone" | "pull" | null, commitCount?: number) => string
+}
+
+const STATUS_CONFIGS: Record<string, StatusConfig> = {
+  "up to date": {
+    color: (theme) => theme.success[0] ?? RGBA.fromHex("#00ff00"),
+    icon: "✓",
+    text: () => "up to date",
+  },
+  behind: {
+    color: (theme) => theme.warning[0] ?? RGBA.fromHex("#ffff00"),
+    icon: "…",
+    text: (_, commitCount) => `${commitCount} behind`,
+  },
+  missing: {
+    color: (theme) => theme.error[0] ?? RGBA.fromHex("#ff0000"),
+    icon: "✗",
+    text: () => "missing",
+  },
+  modified: {
+    color: (theme) => theme.warning[0] ?? RGBA.fromHex("#ffff00"),
+    icon: "…",
+    text: () => "modified",
+  },
+  loading: {
+    color: (theme) => theme.grays[0] ?? RGBA.fromHex("#888888"),
+    icon: "◐",
+    text: () => "loading...",
+  },
+  syncing: {
+    color: (theme) => theme.info[0] ?? RGBA.fromHex("#00AAFF"),
+    icon: "◐",
+    text: (syncType) => (syncType === "clone" ? "Cloning..." : "Pulling..."),
+  },
+  error: {
+    color: (theme) => theme.error[0] ?? RGBA.fromHex("#ff0000"),
+    icon: "!",
+    text: () => "error",
+  },
+}
+
+const DEFAULT_STATUS_CONFIG: StatusConfig = {
+  color: (theme) => theme.grays[0] ?? RGBA.fromHex("#888888"),
+  icon: "?",
+  text: () => "unknown",
+}
+
+function getStatusConfig(status: RepoStatus | UiStatus): StatusConfig {
+  if ("state" in status) {
+    const config = STATUS_CONFIGS[status.state]
+    if (config) return config
+  } else {
+    const config = STATUS_CONFIGS[status]
+    if (config) return config
+  }
+  return DEFAULT_STATUS_CONFIG
+}
+
+function isRepoStatus(status: RepoStatus | UiStatus): status is RepoStatus {
+  return "state" in status
+}
+
+export function RepoItem(props: RepoItemProps) {
   const runtime = useRuntime()
+  const theme = useTheme()
+  const queryClient = useQueryClient()
+  const [syncType, setSyncType] = useState<"clone" | "pull" | null>(null)
 
   const query = queryOptions({
-    queryKey: ["repo-status", url] as const,
+    queryKey: ["repo-status", props.url] as const,
     queryFn: () =>
       Effect.gen(function* () {
         const git = yield* Git
-        const targetDir = getTargetDir()
-        return yield* git.checkStatus(url, targetDir)
+        return yield* git.checkStatus(props.url)
       }).pipe(runtime.runPromise),
   })
 
-  return useQuery(query)
-}
-
-export function useSyncRepo() {
-  const runtime = useRuntime()
-  const queryClient = useQueryClient()
-  const [syncType, setSyncType] = useState<"clone" | "pull" | null>(null)
+  const statusQuery = useQuery(query)
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -52,12 +110,11 @@ export function useSyncRepo() {
       url: string
       type: "clone" | "pull"
     }) => {
-      const targetDir = getTargetDir()
       const git = runtime.runSync(Git)
       if (type === "clone") {
-        return git.clone(url, targetDir)
+        return git.clone(url)
       } else {
-        return git.pull(url, targetDir)
+        return git.pull(url)
       }
     },
     onSuccess: (_, { url }) => {
@@ -69,92 +126,8 @@ export function useSyncRepo() {
     },
   })
 
-  const sync = (url: string, currentStatus: RepoStatus) => {
-    const type = currentStatus === "missing" ? "clone" : "pull"
-    setSyncType(type)
-    mutation.mutate({ url, type })
-  }
-
-  return { sync, isSyncing: mutation.isPending, syncType }
-}
-
-import { Git } from "../services/git"
-import { theme } from "../lib/theme"
-
-export interface RepoItemProps {
-  url: string
-  isSelected: boolean
-  onSelect: () => void
-  syncing?: boolean
-  syncType?: "clone" | "pull" | null
-  onSync?: () => void
-}
-
-function getStatusColor(status: RepoStatus): RGBA {
-  switch (status) {
-    case "synced":
-      return theme.success[0] ?? RGBA.fromHex("#00ff00")
-    case "modified":
-      return theme.warning[0] ?? RGBA.fromHex("#ffff00")
-    case "missing":
-      return theme.error[0] ?? RGBA.fromHex("#ff0000")
-    case "loading":
-      return theme.grays[0] ?? RGBA.fromHex("#888888")
-    case "syncing":
-      return theme.info[0] ?? RGBA.fromHex("#00AAFF")
-    case "error":
-      return theme.error[0] ?? RGBA.fromHex("#ff0000")
-    default:
-      return theme.grays[0] ?? RGBA.fromHex("#888888")
-  }
-}
-
-function getStatusIcon(status: RepoStatus): string {
-  switch (status) {
-    case "synced":
-      return "✓"
-    case "modified":
-      return "…"
-    case "missing":
-      return "✗"
-    case "loading":
-      return "◐"
-    case "syncing":
-      return "◐"
-    case "error":
-      return "!"
-    default:
-      return "?"
-  }
-}
-
-function getStatusText(
-  status: RepoStatus,
-  syncType: "clone" | "pull" | null,
-): string {
-  switch (status) {
-    case "synced":
-      return "synced"
-    case "modified":
-      return "modified"
-    case "missing":
-      return "missing"
-    case "loading":
-      return "loading..."
-    case "syncing":
-      return syncType === "clone" ? "Cloning..." : "Pulling..."
-    case "error":
-      return "error"
-    default:
-      return "unknown"
-  }
-}
-
-export function RepoItem(props: RepoItemProps) {
-  const statusQuery = useRepoStatus(props.url)
-  const [isHovered, setIsHovered] = useState(false)
-  const effectiveStatus: RepoStatus = useMemo(() => {
-    if (props.syncing) {
+  const effectiveStatus: RepoStatus | UiStatus = useMemo(() => {
+    if (mutation.isPending) {
       return "syncing"
     }
     if (statusQuery.isLoading) {
@@ -163,44 +136,47 @@ export function RepoItem(props: RepoItemProps) {
     if (statusQuery.isError) {
       return "error"
     }
-    return statusQuery.data ?? "loading"
-  }, [statusQuery, props.syncing])
+    const data = statusQuery.data
+    if (data) return data
+    return "loading"
+  }, [statusQuery, mutation.isPending])
 
   const repoName = useMemo(() => {
     const match = parseGithubUrlSync(props.url)
     return match?.repo ?? props.url
   }, [props.url])
 
-  const statusColor = getStatusColor(effectiveStatus)
-  const statusIcon = getStatusIcon(effectiveStatus)
-  const statusText = getStatusText(effectiveStatus, props.syncType ?? null)
+  useKeyboard((event) => {
+    if (props.isHighlighted && match(event, "repo-sync")) {
+      if (mutation.isPending) return
+      const currentStatus = statusQuery.data
+      if (!currentStatus) return
 
-  const hoverBackgroundColor = useMemo(() => {
-    return theme.bg[2] ?? RGBA.fromHex("#1a1b26")
-  }, [])
+      if (isRepoStatus(currentStatus) && currentStatus.state === "missing") {
+        setSyncType("clone")
+        mutation.mutate({ url: props.url, type: "clone" })
+      } else {
+        setSyncType("pull")
+        mutation.mutate({ url: props.url, type: "pull" })
+      }
+    }
+  })
+
+  const config = getStatusConfig(effectiveStatus)
+  const statusColor = config.color(theme)
+  const statusIcon = config.icon
+  const commitCount =
+    isRepoStatus(effectiveStatus) && effectiveStatus.state === "behind" ?
+      effectiveStatus.commitCount
+    : undefined
+  const statusText = config.text(syncType, commitCount)
 
   return (
-    <box
-      backgroundColor={
-        props.isSelected ? (theme.bg[3] ?? RGBA.fromHex("#2a2e3f"))
-        : isHovered ?
-          hoverBackgroundColor
-        : "transparent"
-      }
-      paddingLeft={1}
-      paddingRight={1}
-      paddingTop={1}
-      paddingBottom={1}
-      flexDirection="row"
-      justifyContent="space-between"
-      alignItems="center"
-      onMouseOver={() => setIsHovered(true)}
-      onMouseOut={() => setIsHovered(false)}
-    >
+    <box backgroundColor={props.isHighlighted ? theme.bg[3] : "transparent"}>
       <box flexDirection="row" alignItems="center" flexGrow={1}>
         <text
           attributes={
-            props.isSelected ? TextAttributes.BOLD : TextAttributes.NONE
+            props.isHighlighted ? TextAttributes.BOLD : TextAttributes.NONE
           }
           truncate={true}
         >

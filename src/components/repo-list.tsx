@@ -1,20 +1,18 @@
-import { RGBA, TextAttributes } from "@opentui/core"
+import { RGBA } from "@opentui/core"
 import { useKeyboard } from "@opentui/react"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { Effect } from "effect"
 import { useEffect, useState } from "react"
 import { match } from "../lib/keybinds"
-import { theme } from "../lib/theme"
 import { Config } from "../services/config"
-import { Git } from "../services/git"
 import { useRuntime } from "./provider-runtime"
-import { RepoItem, type RepoStatus } from "./repo-item"
+import { useTheme } from "./provider-theme"
+import { RepoItem } from "./repo-item"
 
 export function RepoList() {
   const runtime = useRuntime()
+  const theme = useTheme()
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const [syncingUrl, setSyncingUrl] = useState<string | null>(null)
-  const [syncType, setSyncType] = useState<"clone" | "pull" | null>(null)
 
   const reposQuery = queryOptions({
     queryKey: ["repos"] as const,
@@ -34,31 +32,6 @@ export function RepoList() {
     }
   }, [repos.data])
 
-  const handleSync = async (url: string, currentStatus: RepoStatus) => {
-    if (syncingUrl) return
-
-    const type = currentStatus === "missing" ? "clone" : "pull"
-    setSyncingUrl(url)
-    setSyncType(type)
-
-    try {
-      const targetDir = `${process.cwd()}/.context`
-      const effect = Effect.gen(function* () {
-        const git = yield* Git
-        if (type === "clone") {
-          yield* git.clone(url, targetDir)
-        } else {
-          yield* git.pull(url, targetDir)
-        }
-      })
-      await runtime.runPromise(effect)
-    } catch {
-    } finally {
-      setSyncingUrl(null)
-      setSyncType(null)
-    }
-  }
-
   useKeyboard((event) => {
     if (!repos.data?.length) {
       return
@@ -73,49 +46,61 @@ export function RepoList() {
       setSelectedIndex((prev) => Math.max(prev - 1, 0))
       return
     }
-
-    if (match(event, "repo-sync")) {
-      const selectedUrl = repos.data[selectedIndex]
-      if (selectedUrl) {
-        void handleSync(selectedUrl, "synced")
-      }
-    }
   })
 
-  return (
-    <box
-      flexDirection="column"
-      flexGrow={1}
-      backgroundColor={theme.bg[2] ?? RGBA.fromHex("#1a1b26")}
-    >
-      <box
-        paddingLeft={1}
-        paddingRight={1}
-        paddingTop={1}
-        paddingBottom={1}
-        backgroundColor={theme.bg[1] ?? RGBA.fromHex("#0f0f14")}
-        flexDirection="row"
-        justifyContent="space-between"
-      >
-        <text
-          fg={theme.info[0] ?? RGBA.fromHex("#00AAFF")}
-          attributes={TextAttributes.BOLD}
-        >
-          Repositories
-        </text>
-      </box>
-      <box flexDirection="column">
+  const renderContent = () => {
+    if (repos.isLoading) {
+      return (
+        <box padding={1} flexDirection="row" alignItems="center">
+          <text fg={theme.grays[0] ?? RGBA.fromHex("#888888")}>loading...</text>
+          <text paddingLeft={1} fg={theme.grays[0] ?? RGBA.fromHex("#888888")}>
+            ◐
+          </text>
+        </box>
+      )
+    }
+
+    if (repos.isError) {
+      return (
+        <box padding={1} flexDirection="column">
+          <text fg={theme.error[0] ?? RGBA.fromHex("#ff0000")}>
+            Failed to load repositories:
+          </text>
+          <text fg={theme.error[0] ?? RGBA.fromHex("#ff0000")} paddingLeft={1}>
+            {repos.error instanceof Error ?
+              repos.error.message
+            : String(repos.error)}
+          </text>
+        </box>
+      )
+    }
+
+    if (repos.data?.length === 0) {
+      return (
+        <box padding={1} flexDirection="row" alignItems="center">
+          <text fg={theme.grays[0] ?? RGBA.fromHex("#888888")}>
+            No repositories found.
+          </text>
+        </box>
+      )
+    }
+
+    return (
+      <>
         {repos.data?.map((url, index) => (
           <RepoItem
             key={url}
             url={url}
-            isSelected={index === selectedIndex}
-            onSelect={() => setSelectedIndex(index)}
-            syncing={syncingUrl === url}
-            syncType={syncType}
+            isHighlighted={index === selectedIndex}
           />
         ))}
-      </box>
+      </>
+    )
+  }
+
+  return (
+    <box flexDirection="column">
+      <box flexDirection="column">{renderContent()}</box>
     </box>
   )
 }

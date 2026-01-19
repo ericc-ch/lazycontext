@@ -1,6 +1,6 @@
 {
   "repos": [
-    { "url": "https://github.com/anomalyco/opentui.git" },
-    { "url": "https://github.com/Effect-TS/effect.git" }
+    "https://github.com/anomalyco/opentui.git",
+    "https://github.com/Effect-TS/effect.git"
   ]
 }

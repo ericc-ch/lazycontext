@@ -1,11 +1,11 @@
-import { RGBA } from "@opentui/core"
 import { useKeyboard, useRenderer } from "@opentui/react"
+import { useTheme } from "./components/provider-theme"
 import { RepoList } from "./components/repo-list"
 import { match } from "./lib/keybinds"
-import { theme } from "./lib/theme"
 
 export function App() {
   const renderer = useRenderer()
+  const theme = useTheme()
 
   useKeyboard((event) => {
     if (match(event, "toggle-console")) {
@@ -18,7 +18,7 @@ export function App() {
     }
   })
 
-  const bgColor = () => theme.bg[0] ?? RGBA.fromHex("#0f0f14")
+  const bgColor = () => theme.bg[4]
 
   return (
     <>
@@ -33,9 +33,7 @@ export function App() {
         paddingBottom={1}
         gap={1}
       >
-        <box flexDirection="column">
-          <RepoList />
-        </box>
+        <RepoList />
       </box>
     </>
   )

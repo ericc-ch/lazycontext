@@ -19,7 +19,6 @@ export class Config extends Effect.Service<Config>()("Config", {
 
     const cwd = yield* Effect.sync(() => process.cwd())
     const configPath = path.join(cwd, "lazycontext.json")
-    yield* Effect.log("Loading config from", configPath)
 
     const ensureDirExists = Effect.gen(function* () {
       const dirPath = path.join(cwd, ".context")

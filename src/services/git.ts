@@ -1,6 +1,18 @@
-import { Command, CommandExecutor } from "@effect/platform"
-import { Data, Effect } from "effect"
+import { Command, CommandExecutor, Path } from "@effect/platform"
+import { Data, Effect, Schema } from "effect"
 import { parseGithubUrl } from "../lib/url"
+
+export const RepoStatus = Schema.Union(
+  Schema.Struct({ state: Schema.Literal("missing") }),
+  Schema.Struct({ state: Schema.Literal("up to date") }),
+  Schema.Struct({
+    state: Schema.Literal("behind"),
+    commitCount: Schema.Number,
+  }),
+  Schema.Struct({ state: Schema.Literal("modified") }),
+)
+
+export type RepoStatus = typeof RepoStatus.Type
 
 export class GitError extends Data.TaggedError("GitError")<{
   readonly message: string
@@ -8,12 +20,15 @@ export class GitError extends Data.TaggedError("GitError")<{
 }> {}
 
 export class Git extends Effect.Service<Git>()("Git", {
-  accessors: true,
   effect: Effect.gen(function* () {
     const executor = yield* CommandExecutor.CommandExecutor
+    const path = yield* Path.Path
+
+    const cwd = yield* Effect.sync(() => process.cwd())
+    const targetDir = path.join(cwd, ".context/")
 
     return {
-      clone: Effect.fn(function* (url: string, targetDir: string) {
+      clone: Effect.fn(function* (url: string) {
         const { repo: repoName } = yield* parseGithubUrl(url)
         const command = Command.make(
           "git",
@@ -31,7 +46,7 @@ export class Git extends Effect.Service<Git>()("Git", {
         }
       }),
 
-      pull: Effect.fn(function* (url: string, targetDir: string) {
+      pull: Effect.fn(function* (url: string) {
         const { repo: repoName } = yield* parseGithubUrl(url)
         const command = Command.make(
           "git",
@@ -49,33 +64,46 @@ export class Git extends Effect.Service<Git>()("Git", {
         }
       }),
 
-      checkStatus: Effect.fn(function* (url: string, targetDir: string) {
+      checkStatus: Effect.fn(function* (url: string) {
         const { repo: repoName } = yield* parseGithubUrl(url)
-        const dirCommand = Command.make(
-          "test",
-          "-d",
-          `${targetDir}/${repoName}`,
-        )
+        const dirPath = `${targetDir}/${repoName}`
+
+        const dirCommand = Command.make("test", "-d", dirPath)
         const dirResult = yield* executor.exitCode(dirCommand)
 
         if (dirResult !== 0) {
-          return "missing" as const
+          return { state: "missing" }
         }
 
         const statusCommand = Command.make(
           "git",
           "-C",
-          `${targetDir}/${repoName}`,
+          dirPath,
           "status",
           "--porcelain",
         )
-        const output = yield* executor.string(statusCommand)
+        const statusOutput = yield* executor.string(statusCommand)
 
-        if (output.trim() === "") {
-          return "synced" as const
+        if (statusOutput.trim() !== "") {
+          return { state: "modified" }
         }
 
-        return "modified" as const
+        const countCommand = Command.make(
+          "git",
+          "-C",
+          dirPath,
+          "rev-list",
+          "--count",
+          "HEAD..origin/main",
+        )
+        const countResult = yield* executor.string(countCommand)
+        const commitCount = Number.parseInt(countResult.trim(), 10)
+
+        if (commitCount > 0) {
+          return { state: "behind", commitCount }
+        }
+
+        return { state: "up to date" }
       }),
     }
   }),
