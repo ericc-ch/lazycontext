@@ -9,67 +9,14 @@ import { Effect } from "effect"
 import { useMemo, useState } from "react"
 import { Git, type RepoStatus } from "../services/git"
 import { useRuntime } from "./provider-runtime"
-import { useTheme, type Theme } from "./provider-theme"
+import { useTheme } from "./provider-theme"
+import { StatusBadge } from "./status-badge"
 
 type UiStatus = "loading" | "syncing" | "error"
 
 export interface RepoItemProps {
   url: string
   isHighlighted: boolean
-}
-
-type StatusConfig = {
-  color: (theme: Theme) => RGBA
-  icon: string
-  text: (syncType: "clone" | "pull" | null, commitCount?: number) => string
-}
-
-const STATUS_CONFIGS: Record<string, StatusConfig> = {
-  "up to date": {
-    color: (theme) => theme.success[0] ?? RGBA.fromHex("#00ff00"),
-    icon: "✓",
-    text: () => "up to date",
-  },
-  behind: {
-    color: (theme) => theme.warning[0] ?? RGBA.fromHex("#ffff00"),
-    icon: "…",
-    text: (_, commitCount) => `${commitCount} behind`,
-  },
-  missing: {
-    color: (theme) => theme.error[0] ?? RGBA.fromHex("#ff0000"),
-    icon: "✗",
-    text: () => "missing",
-  },
-  modified: {
-    color: (theme) => theme.warning[0] ?? RGBA.fromHex("#ffff00"),
-    icon: "…",
-    text: () => "modified",
-  },
-  loading: {
-    color: (theme) => theme.grays[0] ?? RGBA.fromHex("#888888"),
-    icon: "◐",
-    text: () => "loading...",
-  },
-  syncing: {
-    color: (theme) => theme.info[0] ?? RGBA.fromHex("#00AAFF"),
-    icon: "◐",
-    text: (syncType) => (syncType === "clone" ? "Cloning..." : "Pulling..."),
-  },
-  error: {
-    color: (theme) => theme.error[0] ?? RGBA.fromHex("#ff0000"),
-    icon: "!",
-    text: () => "error",
-  },
-}
-
-const DEFAULT_STATUS_CONFIG: StatusConfig = {
-  color: (theme) => theme.grays[0] ?? RGBA.fromHex("#888888"),
-  icon: "?",
-  text: () => "unknown",
-}
-
-function isRepoStatus(status: RepoStatus | UiStatus): status is RepoStatus {
-  return typeof status === "object" && status !== null && "state" in status
 }
 
 function parseGithubUrlSync(
@@ -133,39 +80,33 @@ export function RepoItem(props: RepoItemProps) {
 
   const effectiveStatus: RepoStatus | UiStatus = useMemo(() => {
     if (mutation.isPending) {
-      return "syncing"
+      return "syncing" as const
     }
     if (statusQuery.isLoading) {
-      return "loading"
+      return "loading" as const
     }
     if (statusQuery.isError) {
-      return "error"
+      return "error" as const
     }
     const data = statusQuery.data
     if (data) return data
-    return "loading"
+    return "loading" as const
   }, [statusQuery, mutation.isPending])
 
   const repoInfo = useMemo(() => parseGithubUrlSync(props.url), [props.url])
 
-  const config = useMemo(() => {
-    if (isRepoStatus(effectiveStatus)) {
-      const cfg = STATUS_CONFIGS[effectiveStatus.state]
-      if (cfg) return cfg
-    } else {
-      const cfg = STATUS_CONFIGS[effectiveStatus]
-      if (cfg) return cfg
-    }
-    return DEFAULT_STATUS_CONFIG
-  }, [effectiveStatus])
+  const isBehindStatus = (
+    status: RepoStatus | UiStatus,
+  ): status is RepoStatus & { state: "behind"; commitCount: number } => {
+    return (
+      typeof status === "object"
+      && "state" in status
+      && status.state === "behind"
+    )
+  }
 
-  const statusColor = config.color(theme)
-  const statusIcon = config.icon
   const commitCount =
-    isRepoStatus(effectiveStatus) && effectiveStatus.state === "behind" ?
-      effectiveStatus.commitCount
-    : undefined
-  const statusText = config.text(syncType, commitCount)
+    isBehindStatus(effectiveStatus) ? effectiveStatus.commitCount : undefined
 
   const highlightColor =
     props.isHighlighted ? RGBA.fromHex("#334455") : "transparent"
@@ -187,17 +128,11 @@ export function RepoItem(props: RepoItemProps) {
           {repoInfo ? ` / ${repoInfo.repo}` : ""}
         </text>
       </box>
-      <box
-        backgroundColor={statusColor}
-        paddingLeft={1}
-        paddingRight={1}
-        flexDirection="row"
-        alignItems="center"
-        marginLeft={1}
-      >
-        <text>{statusText}</text>
-        <text paddingLeft={1}>{statusIcon}</text>
-      </box>
+      <StatusBadge
+        status={effectiveStatus}
+        syncType={syncType}
+        commitCount={commitCount}
+      />
     </box>
   )
 }
