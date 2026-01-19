@@ -55,8 +55,8 @@
 
 - Goal: Get the app running without errors.
 - Key Deliverables:
-  - [ ] **Type Fixes**: Fix `UiStatus` vs `RepoStatus` mismatch in `src/components/repo-item.tsx`.
-  - [ ] **Test Fixes**: Resolve `unknown` type errors in `src/services/git.test.ts`.
+  - [x] **Type Fixes**: Fix `UiStatus` vs `RepoStatus` mismatch in `src/components/repo-item.tsx`.
+  - [x] **Test Fixes**: Resolve `unknown` type errors in `src/services/git.test.ts`.
 
 ### Phase 2: Core Interactions
 

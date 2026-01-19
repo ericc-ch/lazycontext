@@ -71,7 +71,7 @@ const DEFAULT_STATUS_CONFIG: StatusConfig = {
 }
 
 function getStatusConfig(status: RepoStatus | UiStatus): StatusConfig {
-  if ("state" in status) {
+  if (isRepoStatus(status)) {
     const config = STATUS_CONFIGS[status.state]
     if (config) return config
   } else {
@@ -82,7 +82,7 @@ function getStatusConfig(status: RepoStatus | UiStatus): StatusConfig {
 }
 
 function isRepoStatus(status: RepoStatus | UiStatus): status is RepoStatus {
-  return "state" in status
+  return typeof status === "object" && status !== null && "state" in status
 }
 
 export function RepoItem(props: RepoItemProps) {

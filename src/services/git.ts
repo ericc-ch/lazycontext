@@ -72,7 +72,7 @@ export class Git extends Effect.Service<Git>()("Git", {
         const dirResult = yield* executor.exitCode(dirCommand)
 
         if (dirResult !== 0) {
-          return { state: "missing" }
+          return { state: "missing" } as const
         }
 
         const statusCommand = Command.make(
@@ -85,7 +85,7 @@ export class Git extends Effect.Service<Git>()("Git", {
         const statusOutput = yield* executor.string(statusCommand)
 
         if (statusOutput.trim() !== "") {
-          return { state: "modified" }
+          return { state: "modified" } as const
         }
 
         const countCommand = Command.make(
@@ -100,10 +100,10 @@ export class Git extends Effect.Service<Git>()("Git", {
         const commitCount = Number.parseInt(countResult.trim(), 10)
 
         if (commitCount > 0) {
-          return { state: "behind", commitCount }
+          return { state: "behind", commitCount } as const
         }
 
-        return { state: "up to date" }
+        return { state: "up to date" } as const
       }),
     }
   }),

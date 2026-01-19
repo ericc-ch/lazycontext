@@ -6,3 +6,23 @@ Project initialized with Ralph workflow.
 Next: Begin working on first task.
 
 ---
+
+## Session 1
+
+### Tasks completed in this session
+- Fixed type errors in `src/services/git.ts` by adding `as const` assertions to `checkStatus` return values to match the `readonly` `RepoStatus` schema types
+- Fixed type guard `isRepoStatus` in `src/components/repo-item.tsx` to use proper type narrowing with `typeof status === "object"` check instead of `in` operator
+- Fixed test errors in `src/services/git.test.ts` by adding proper type checks for `unknown` error types using `instanceof Error` guards
+
+### Decisions made and why
+- Added `as const` assertions to git.ts return values: The `RepoStatus` schema uses `readonly` properties, but the `checkStatus` function was returning plain objects. Using `as const` makes the returned objects have `readonly` properties, matching the schema type.
+- Changed type guard implementation: The `in` operator wasn't working correctly with union. Using `typeof status === "object" && types in TypeScript status !== null && "state" in status` properly narrows the type.
+- Used `instanceof Error` for error type checking: Bun's test framework requires proper type narrowing for `unknown` types before calling methods like `toString()`.
+
+### Blockers encountered
+- None significant; type system issues were resolved by proper type narrowing and const assertions.
+
+### Files changed
+- `src/services/git.ts` - Added `as const` assertions to return values
+- `src/components/repo-item.tsx` - Fixed type guard implementation
+- `src/services/git.test.ts` - Added type guards for error handling
