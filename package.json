@@ -20,7 +20,8 @@
     "start": "bun src/main.tsx",
     "format": "prettier --write .",
     "lint": "oxlint --type-aware",
-    "typecheck": "tsgo"
+    "typecheck": "tsgo",
+    "test": "bun test"
   },
   "dependencies": {
     "@effect/experimental": "^0.58.0",
