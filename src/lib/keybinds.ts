@@ -15,8 +15,8 @@ export const keybinds = new Map<KeyAction, string | string[]>([
   ["navigate-down", ["j", "down"]],
   ["navigate-up", ["k", "up"]],
   ["repo-add", "a"],
-  ["repo-sync", "enter"],
-  ["repo-sync-all", "s"],
+  ["repo-sync", "s"],
+  ["repo-sync-all", "S"],
   ["cancel", "escape"],
   ["quit", "q"],
 ])

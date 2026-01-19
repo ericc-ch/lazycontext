@@ -26,3 +26,20 @@ Next: Begin working on first task.
 - `src/services/git.ts` - Added `as const` assertions to return values
 - `src/components/repo-item.tsx` - Fixed type guard implementation
 - `src/services/git.test.ts` - Added type guards for error handling
+
+---
+
+## Session 2
+
+### Tasks completed in this session
+- Updated keybindings in `src/lib/keybinds.ts`: Changed `repo-sync` from "enter" to "s", and `repo-sync-all` from "s" to "S" (Shift+s)
+
+### Decisions made and why
+- Mapped lowercase "s" to sync the highlighted repository: Aligns with requirement that `s` syncs the currently highlighted repository
+- Mapped uppercase "S" (Shift+s) to sync all repositories: Aligns with requirement that `S` syncs ALL repositories sequentially or in parallel
+
+### Blockers encountered
+- None; keybinding changes were straightforward
+
+### Files changed
+- `src/lib/keybinds.ts` - Updated key mappings for repo-sync and repo-sync-all
