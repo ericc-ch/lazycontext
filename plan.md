@@ -70,5 +70,5 @@
 
 - Goal: Match terminal aesthetics.
 - Key Deliverables:
-  - [ ] **Transparent Background**: Update `src/app.tsx` to remove hardcoded background color.
+  - [x] **Transparent Background**: Update `src/app.tsx` to remove hardcoded background color.
   - [ ] **Highlighting**: Ensure navigation highlight remains visible against transparent background.

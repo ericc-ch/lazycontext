@@ -61,3 +61,21 @@ Next: Begin working on first task.
 
 ### Files changed
 - `src/components/repo-list.tsx` - Added "repo-sync-all" keyboard handler, isRepoStatus type guard function
+
+---
+
+## Session 4
+
+### Tasks completed in this session
+- Removed hardcoded background color from `src/app.tsx` to allow terminal transparency
+
+### Decisions made and why
+- Removed `backgroundColor={bgColor()}` from main box element: The plan specified the main background should be transparent to match the terminal background
+- Removed unused `useTheme` import and `theme` const: LSP flagged these as unused after the background color removal
+- Highlighted items already use `theme.bg[3]` with bold text: The highlighting in repo-item.tsx already handles visibility against transparent backgrounds
+
+### Blockers encountered
+- None; LSP errors were resolved by cleaning up unused code
+
+### Files changed
+- `src/app.tsx` - Removed backgroundColor prop, removed unused useTheme import and theme const
