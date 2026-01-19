@@ -60,3 +60,20 @@ Tasks completed in this session:
 - TypeScript: No errors
 - Tests: 23 pass, 0 fail
 - Lint: 0 warnings, 0 errors
+
+---
+
+Tasks completed in this session:
+- Added borders to Layout component - Added `border={true}` to the main content area to frame the repo list with box-drawing characters
+
+Decisions made and why:
+- Used OpenTUI's simple `border={true}` prop which adds a single-line border around the content area
+- The border frames the repo list, creating visual separation from the header and footer areas
+- This approach is clean and follows the "Refined Industrial" aesthetic - minimal yet structured
+
+Blockers encountered:
+- Initially attempted to use individual side borders (borderLeft, borderRight, etc.) which don't exist in OpenTUI's BoxProps
+- Resolved by using the simple `border={true}` which applies a full border around the content box
+
+Files changed:
+- src/components/layout.tsx (border added to content box)

@@ -29,7 +29,7 @@ export function Layout(props: LayoutProps) {
           {props.header}
         </box>
       )}
-      <box flexDirection="column" flexGrow={1} overflow="hidden">
+      <box flexDirection="column" flexGrow={1} overflow="hidden" border={true}>
         {props.children}
       </box>
       {props.footer && (
@@ -38,7 +38,7 @@ export function Layout(props: LayoutProps) {
           flexDirection="column"
           paddingLeft={1}
           paddingRight={1}
-          paddingTop={0}
+          paddingTop={1}
           paddingBottom={1}
         >
           {props.footer}
