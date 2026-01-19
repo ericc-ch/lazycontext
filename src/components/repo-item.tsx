@@ -1,5 +1,4 @@
-import { RGBA, TextAttributes } from "@opentui/core"
-import { useKeyboard } from "@opentui/react"
+import { RGBA } from "@opentui/core"
 import {
   queryOptions,
   useMutation,
@@ -8,7 +7,6 @@ import {
 } from "@tanstack/react-query"
 import { Effect } from "effect"
 import { useMemo, useState } from "react"
-import { match } from "../lib/keybinds"
 import { Git, type RepoStatus } from "../services/git"
 import { useRuntime } from "./provider-runtime"
 import { useTheme, type Theme } from "./provider-theme"
@@ -70,19 +68,26 @@ const DEFAULT_STATUS_CONFIG: StatusConfig = {
   text: () => "unknown",
 }
 
-function getStatusConfig(status: RepoStatus | UiStatus): StatusConfig {
-  if (isRepoStatus(status)) {
-    const config = STATUS_CONFIGS[status.state]
-    if (config) return config
-  } else {
-    const config = STATUS_CONFIGS[status]
-    if (config) return config
-  }
-  return DEFAULT_STATUS_CONFIG
-}
-
 function isRepoStatus(status: RepoStatus | UiStatus): status is RepoStatus {
   return typeof status === "object" && status !== null && "state" in status
+}
+
+function parseGithubUrlSync(
+  url: string,
+): { owner: string; repo: string } | null {
+  const githubUrlRegex = new RegExp(
+    "(?:https:\\/|git@)github\\.com[\\/:](?<owner>[^/]+)\\/(?<repo>[^/]+?)(?:\\.git)?$",
+  )
+  const match = url.match(githubUrlRegex)
+  if (!match || !match.groups) {
+    return null
+  }
+  const owner = match.groups.owner
+  const repo = match.groups.repo
+  if (owner === undefined || repo === undefined) {
+    return null
+  }
+  return { owner, repo }
 }
 
 export function RepoItem(props: RepoItemProps) {
@@ -141,28 +146,19 @@ export function RepoItem(props: RepoItemProps) {
     return "loading"
   }, [statusQuery, mutation.isPending])
 
-  const repoName = useMemo(() => {
-    const match = parseGithubUrlSync(props.url)
-    return match?.repo ?? props.url
-  }, [props.url])
+  const repoInfo = useMemo(() => parseGithubUrlSync(props.url), [props.url])
 
-  useKeyboard((event) => {
-    if (props.isHighlighted && match(event, "repo-sync")) {
-      if (mutation.isPending) return
-      const currentStatus = statusQuery.data
-      if (!currentStatus) return
-
-      if (isRepoStatus(currentStatus) && currentStatus.state === "missing") {
-        setSyncType("clone")
-        mutation.mutate({ url: props.url, type: "clone" })
-      } else {
-        setSyncType("pull")
-        mutation.mutate({ url: props.url, type: "pull" })
-      }
+  const config = useMemo(() => {
+    if (isRepoStatus(effectiveStatus)) {
+      const cfg = STATUS_CONFIGS[effectiveStatus.state]
+      if (cfg) return cfg
+    } else {
+      const cfg = STATUS_CONFIGS[effectiveStatus]
+      if (cfg) return cfg
     }
-  })
+    return DEFAULT_STATUS_CONFIG
+  }, [effectiveStatus])
 
-  const config = getStatusConfig(effectiveStatus)
   const statusColor = config.color(theme)
   const statusIcon = config.icon
   const commitCount =
@@ -175,15 +171,20 @@ export function RepoItem(props: RepoItemProps) {
     props.isHighlighted ? RGBA.fromHex("#334455") : "transparent"
 
   return (
-    <box backgroundColor={highlightColor} paddingLeft={1} paddingRight={1}>
+    <box
+      backgroundColor={highlightColor}
+      paddingLeft={1}
+      paddingRight={1}
+      flexDirection="row"
+      alignItems="center"
+      justifyContent="space-between"
+    >
       <box flexDirection="row" alignItems="center" flexGrow={1}>
-        <text
-          attributes={
-            props.isHighlighted ? TextAttributes.BOLD : TextAttributes.NONE
-          }
-          truncate={true}
-        >
-          {repoName}
+        <text fg={theme.grays[1] ?? RGBA.fromHex("#666666")} truncate={true}>
+          {repoInfo?.owner ?? ""}
+        </text>
+        <text fg={theme.fg[0] ?? RGBA.fromHex("#ffffff")} truncate={true}>
+          {repoInfo ? ` / ${repoInfo.repo}` : ""}
         </text>
       </box>
       <box
@@ -192,28 +193,11 @@ export function RepoItem(props: RepoItemProps) {
         paddingRight={1}
         flexDirection="row"
         alignItems="center"
+        marginLeft={1}
       >
         <text>{statusText}</text>
         <text paddingLeft={1}>{statusIcon}</text>
       </box>
     </box>
   )
-}
-
-function parseGithubUrlSync(
-  url: string,
-): { owner: string; repo: string } | null {
-  const githubUrlRegex = new RegExp(
-    "(?:https:\\/|git@)github\\.com[\\/:](?<owner>[^/]+)\\/(?<repo>[^/]+?)(?:\\.git)?$",
-  )
-  const match = url.match(githubUrlRegex)
-  if (!match || !match.groups) {
-    return null
-  }
-  const owner = match.groups.owner
-  const repo = match.groups.repo
-  if (owner === undefined || repo === undefined) {
-    return null
-  }
-  return { owner, repo }
 }
